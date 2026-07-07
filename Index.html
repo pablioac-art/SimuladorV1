@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Cor — Dissilicato | Atelier Pablio Caetano</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+:root{
+  --bg: #16211f;
+  --bg-panel: #1e2c29;
+  --bg-deep: #0f1817;
+  --line: #31443f;
+  --ivory: #efe9dc;
+  --ivory-dim: #b8b0a0;
+  --gold: #c9a45c;
+  --gold-deep: #a5813e;
+  --alert: #c96a5c;
+  --ok: #7ba86e;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  background: var(--bg);
+  color: var(--ivory);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+
+header{
+  text-align:center;
+  padding: 40px 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  color: var(--gold);
+  margin-bottom:10px;
+}
+
+h1{
+  font-family:'Fraunces',serif;
+  font-weight:500;
+  font-size: clamp(26px,5vw,38px);
+  margin:0 0 8px;
+}
+
+.subhead{
+  font-size:13px;
+  color: var(--ivory-dim);
+  max-width:520px;
+  margin:0 auto;
+  line-height:1.55;
+}
+
+.mode-tabs{
+  display:flex;
+  justify-content:center;
+  gap:0;
+  margin-top:24px;
+}
+
+.lang-switch{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  justify-content:center;
+  max-width:640px;
+  margin: 20px auto 0;
+}
+.lang-btn{
+  font-family:'Inter',sans-serif;
+  font-size:11.5px;
+  padding:6px 12px;
+  background: var(--bg-panel);
+  border:1px solid var(--line);
+  color: var(--ivory-dim);
+  cursor:pointer;
+  border-radius:14px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+}
+.lang-btn .flag{ font-size:14px; }
+.lang-btn:hover{ border-color: var(--gold-deep); color: var(--ivory); }
+.lang-btn.active{
+  background: var(--gold);
+  color: var(--bg-deep);
+  border-color: var(--gold);
+  font-weight:500;
+}
+header{ position:relative; }
+
+.mode-tab{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:10px 22px;
+  background:none;
+  border:1px solid var(--line);
+  color: var(--ivory-dim);
+  cursor:pointer;
+}
+.mode-tab:first-child{ border-radius:2px 0 0 2px; }
+.mode-tab:last-child{ border-radius:0 2px 2px 0; border-left:none; }
+.mode-tab.active{
+  background: var(--gold);
+  color: var(--bg-deep);
+  border-color: var(--gold);
+  font-weight:500;
+}
+
+main{
+  max-width: 1080px;
+  margin:0 auto;
+  padding: 32px 20px 80px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns: 340px 1fr;
+  gap:28px;
+}
+@media(max-width:820px){ .layout{ grid-template-columns:1fr; } }
+
+/* ---- Controls panel ---- */
+.controls{
+  background: var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:24px;
+}
+
+.ctrl-group{ margin-bottom:24px; }
+.ctrl-group:last-child{ margin-bottom:0; }
+
+.ctrl-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color: var(--gold);
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+}
+.ctrl-label .val{
+  color: var(--ivory);
+  font-size:12px;
+}
+
+.chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+
+.chip{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  padding:7px 12px;
+  background: var(--bg-deep);
+  border:1px solid var(--line);
+  border-radius:2px;
+  color: var(--ivory-dim);
+  cursor:pointer;
+  transition: all .15s ease;
+}
+.chip:hover{ border-color: var(--gold-deep); color: var(--ivory); }
+.chip.selected{
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-deep);
+  font-weight:500;
+}
+
+input[type=range]{
+  width:100%;
+  accent-color: var(--gold);
+  direction: ltr;
+}
+
+.range-marks{
+  display:flex;
+  justify-content:space-between;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:var(--ivory-dim);
+  margin-top:4px;
+}
+
+/* ---- Result stage ---- */
+.stage{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+.optical-view{
+  background: var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:28px;
+}
+
+.optical-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ivory-dim);
+  margin-bottom:18px;
+}
+
+.flow{
+  display:flex;
+  align-items:stretch;
+  justify-content:space-between;
+  gap:4px;
+}
+@media(max-width:640px){ .flow{ flex-wrap:wrap; justify-content:center; } }
+
+.stage-card{
+  flex:1;
+  min-width:110px;
+  background: var(--bg-deep);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:14px 8px 10px;
+  text-align:center;
+  transition: all .3s ease;
+}
+
+.stage-card svg{
+  width:100%;
+  height:110px;
+  display:block;
+}
+
+.stage-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color: var(--ivory-dim);
+  margin-top:8px;
+}
+.stage-label strong{
+  display:block;
+  color: var(--ivory);
+  font-size:11px;
+  margin-top:2px;
+  letter-spacing:.05em;
+}
+
+.flow-op{
+  display:flex;
+  align-items:center;
+  font-family:'Fraunces',serif;
+  font-size:22px;
+  color: var(--gold);
+  padding:0 2px;
+}
+@media(max-width:640px){ .flow-op{ display:none; } }
+
+.stage-card.result-stage{
+  border-color: var(--gold-deep);
+  background: linear-gradient(180deg, rgba(201,164,92,0.06), transparent);
+}
+
+.result-panel{
+  background: var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:28px;
+  display:grid;
+  grid-template-columns: 130px 1fr;
+  gap:24px;
+  align-items:center;
+}
+@media(max-width:520px){ .result-panel{ grid-template-columns:1fr; } }
+
+.result-swatch{
+  width:130px; height:130px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.18);
+  box-shadow: inset 0 -18px 30px rgba(0,0,0,0.22), inset 0 12px 20px rgba(255,255,255,0.25);
+  transition: background .35s ease;
+}
+
+.result-info h2{
+  font-family:'Fraunces',serif;
+  font-weight:500;
+  font-size:32px;
+  margin:0 0 4px;
+}
+.result-info .result-note{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--ivory-dim);
+}
+.result-info .flag{
+  display:inline-block;
+  margin-top:10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:5px 10px;
+  border-radius:2px;
+  border:1px solid;
+}
+.flag.warn{ color: var(--alert); border-color: var(--alert); }
+.flag.good{ color: var(--ok); border-color: var(--ok); }
+
+.explain{
+  background: var(--bg-deep);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:20px 24px;
+  font-size:13px;
+  line-height:1.7;
+  color: var(--ivory-dim);
+}
+.explain strong{ color: var(--ivory); font-weight:500; }
+.explain .ex-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:8px;
+}
+
+/* ---- Challenge mode ---- */
+.challenge-card{
+  background: var(--bg-panel);
+  border:1px solid var(--gold-deep);
+  border-radius:3px;
+  padding:24px 28px;
+  margin-bottom:24px;
+}
+.challenge-card h3{
+  font-family:'Fraunces',serif;
+  font-weight:500;
+  font-size:20px;
+  margin:0 0 8px;
+}
+.challenge-card p{
+  font-size:13px;
+  color:var(--ivory-dim);
+  margin:0;
+  line-height:1.6;
+}
+.challenge-target{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+}
+.target-swatch{
+  width:38px; height:38px;
+  border-radius:4px;
+  border:1px solid rgba(255,255,255,0.2);
+}
+.target-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  color:var(--ivory);
+}
+
+.btn{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:11px 22px;
+  background: var(--gold);
+  color: var(--bg-deep);
+  border:none;
+  border-radius:2px;
+  cursor:pointer;
+  font-weight:500;
+}
+.btn.ghost{
+  background:none;
+  border:1px solid var(--line);
+  color: var(--ivory-dim);
+}
+.btn:hover{ opacity:.9; }
+
+.score-row{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--ivory-dim);
+  letter-spacing:.08em;
+  margin-top:14px;
+}
+.score-row strong{ color: var(--gold); }
+
+.verdict{
+  margin-top:16px;
+  padding:16px 20px;
+  border-radius:3px;
+  border:1px solid;
+  font-size:14px;
+  line-height:1.6;
+  display:none;
+}
+.verdict.show{ display:block; }
+.verdict.hit{ border-color: var(--ok); color: var(--ok); background: rgba(123,168,110,0.08); }
+.verdict.miss{ border-color: var(--alert); color: var(--alert); background: rgba(201,106,92,0.08); }
+
+footer{
+  text-align:center;
+  padding:24px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.1em;
+  color:#5a6b66;
+  text-transform:uppercase;
+  border-top:1px solid var(--line);
+}
+
+.disclaimer{
+  max-width:720px;
+  margin: 24px auto 0;
+  font-size:11px;
+  color:#5a6b66;
+  text-align:center;
+  line-height:1.6;
+  padding: 0 20px;
+}
+
+.password-gate{
+  position:fixed; inset:0;
+  background: var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1000;
+  padding:20px;
+}
+.password-box{
+  max-width:380px;
+  width:100%;
+  text-align:center;
+}
+.password-box .eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color: var(--gold-deep);
+  margin-bottom:14px;
+}
+.password-box h2{
+  font-family:'Fraunces',serif;
+  font-weight:500;
+  font-size:26px;
+  color: var(--ivory);
+  margin:0 0 22px;
+}
+.password-box input{
+  width:100%;
+  background: var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:14px 16px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:15px;
+  color: var(--ivory);
+  text-align:center;
+  outline:none;
+  margin-bottom:14px;
+  box-sizing:border-box;
+}
+.password-box input:focus{ border-color: var(--gold); }
+.password-box button{
+  width:100%;
+  background: var(--gold);
+  color: var(--bg-deep);
+  border:none;
+  border-radius:3px;
+  padding:14px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-weight:500;
+  cursor:pointer;
+}
+.password-box .error-msg{
+  color:#c96a5c;
+  font-size:12.5px;
+  margin-top:12px;
+  font-family:'IBM Plex Mono',monospace;
+  display:none;
+}
+.password-box .error-msg.show{ display:block; }
+#appContent{ display:none; }
+</style>
+</head>
+<body>
+
+<div class="password-gate" id="passwordGate">
+  <div class="password-box">
+    <div class="eyebrow">Atelier Pablio Caetano — NL Light Refraction</div>
+    <h2>Acesso ao Simulador</h2>
+    <input type="password" id="passwordInput" placeholder="Senha de acesso" autocomplete="off">
+    <button id="passwordSubmit">Entrar</button>
+    <div class="error-msg" id="passwordError">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<div id="appContent">
+
+<header>
+  <div class="eyebrow" id="txtEyebrow">Atelier Pablio Caetano — NL Light Refraction</div>
+  <h1 id="txtTitle">Simulador de Cor em Dissilicato</h1>
+  <p class="subhead" id="txtSubhead">Monte o caso: substrato, espessura, pastilha e cimento. Veja como a luz se comporta e qual cor final esperar.</p>
+  <div class="lang-switch">
+    <button class="lang-btn active" data-lang="en"><span class="flag">🇺🇸</span>English</button>
+    <button class="lang-btn" data-lang="pt"><span class="flag">🇧🇷</span>Portuguese</button>
+    <button class="lang-btn" data-lang="es"><span class="flag">🇪🇸</span>Spanish</button>
+    <button class="lang-btn" data-lang="fr"><span class="flag">🇫🇷</span>French</button>
+    <button class="lang-btn" data-lang="de"><span class="flag">🇩🇪</span>German</button>
+    <button class="lang-btn" data-lang="it"><span class="flag">🇮🇹</span>Italian</button>
+    <button class="lang-btn" data-lang="ru"><span class="flag">🇷🇺</span>Russian</button>
+    <button class="lang-btn" data-lang="zh"><span class="flag">🇨🇳</span>Chinese (Simplified)</button>
+    <button class="lang-btn" data-lang="ja"><span class="flag">🇯🇵</span>Japanese</button>
+    <button class="lang-btn" data-lang="ko"><span class="flag">🇰🇷</span>Korean</button>
+    <button class="lang-btn" data-lang="ar"><span class="flag">🇸🇦</span>Arabic</button>
+    <button class="lang-btn" data-lang="el"><span class="flag">🇬🇷</span>Greek</button>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="sim" id="tabSim">Simulador</button>
+    <button class="mode-tab" data-mode="game" id="tabGame">Modo Desafio</button>
+  </div>
+</header>
+
+<main>
+  <div id="challengeArea" style="display:none;">
+    <div class="challenge-card">
+      <h3 id="chTitle">Desafio</h3>
+      <p id="chDesc"></p>
+      <div class="challenge-target">
+        <div class="target-swatch" id="chSwatch"></div>
+        <div class="target-label" id="chLabel"></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="score-row"><span id="lblHits">Acertos</span>: <strong id="scoreHits">0</strong> · <span id="lblTries">Tentativas</span>: <strong id="scoreTries">0</strong></div>
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button class="btn" id="checkBtn">Verificar minha escolha</button>
+        <button class="btn ghost" id="newChallengeBtn">Novo caso</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span id="lblSubstrate">Cor do substrato (preparo)</span> <span class="val" id="subVal">A3</span></div>
+        <div class="chip-row" id="substrateChips"></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span id="lblThickness">Espessura da peça</span> <span class="val" id="thickVal">0,8 mm</span></div>
+        <input type="range" id="thickness" min="0.3" max="3" step="0.1" value="0.8">
+        <div class="range-marks"><span>0,3</span><span>1,0</span><span>2,0</span><span>3,0 mm</span></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label" id="lblTranslucency">Pastilha — translucidez</div>
+        <div class="chip-row" id="translucencyChips"></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label" id="lblIngotShade">Pastilha — cor</div>
+        <div class="chip-row" id="ingotShadeChips"></div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label" id="lblCement">Cimento</div>
+        <div class="chip-row" id="cementChips"></div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="optical-view">
+        <div class="optical-title" id="txtOpticalTitle">Montagem do caso — preparo + cimento + pastilha = cor final</div>
+        <div class="flow" id="layersView"></div>
+      </div>
+
+      <div class="result-panel">
+        <div class="result-swatch" id="resultSwatch"></div>
+        <div class="result-info">
+          <h2 id="resultShade">—</h2>
+          <div class="result-note" id="resultNote"></div>
+          <span class="flag" id="resultFlag" style="display:none;"></span>
+        </div>
+      </div>
+
+      <div class="explain">
+        <div class="ex-title" id="txtExTitle">Leitura do caso</div>
+        <div id="explainText"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="disclaimer" id="txtDisclaimer">Ferramenta educativa baseada em experiência clínica de bancada e comportamento óptico documentado do dissilicato de lítio. Não substitui prova de cor com try-in nem julgamento clínico individual.</p>
+</main>
+
+<footer id="txtFooter">Atelier Pablio Caetano · Interpretação sobre execução</footer>
+
+</div>
+
+<script>
+/* =========================================================
+   I18N — PT / EN / ES
+   ========================================================= */
+const I18N = {
+  pt: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Simulador de Cor em Dissilicato",
+    subhead: "Monte o caso: substrato, espessura, pastilha e cimento. Veja como a luz se comporta e qual cor final esperar.",
+    tabSim: "Simulador", tabGame: "Modo Desafio",
+    lblSubstrate: "Cor do substrato (preparo)", lblThickness: "Espessura da peça",
+    lblTranslucency: "Pastilha — translucidez", lblIngotShade: "Pastilha — cor", lblCement: "Cimento",
+    opticalTitle: "Montagem do caso — preparo + cimento + pastilha = cor final",
+    exTitle: "Leitura do caso",
+    disclaimer: "O simulador serve como orientação e referência para a escolha dos materiais. O resultado real pode variar conforme a marca e o tipo de dissilicato utilizado, a técnica de estratificação ou maquiagem aplicada, a marca do cimento, e o polimento realizado. Ainda assim, usado antes da cimentação, o simulador entrega um caminho de decisão muito mais previsível do que a escolha às cegas. Não substitui prova de cor com try-in nem julgamento clínico individual.",
+    footer: "Atelier Pablio Caetano · Interpretação sobre execução",
+    challengeTitle: "Caso clínico", challengeGenericTitle: "Desafio",
+    checkBtn: "Verificar minha escolha", newBtn: "Novo caso",
+    hits: "Acertos", tries: "Tentativas",
+    stagePreparo: "preparo", stagePeca: "peça", stageCimento: "cimento", stagePastilha: "pastilha", stageResultado: "cor final",
+    flagFamShift: "Mudança de família de cor", flagBleach: "Saiu da escala bleach",
+    flagLowValue: "Perda de valor", flagStable: "Resultado estável",
+    cementLabels: { neutro:"Neutro", maisvalor:"+ Valor", baixovalor:"− Valor" },
+    transDesc: {
+      HT: "Alta translucidez — a peça quase não filtra o substrato. Uso típico: lentes com espessura uniforme entre todos os preparos.",
+      MT: "Translucidez média — preserva a família de cor, mas o valor cai. Uso típico: preparos com leves variações de espessura.",
+      LT: "Baixa translucidez — a pastilha impõe a própria cor; substrato desliza pouco. Uso típico: casos que exigem mais valor e estratificação de superfície.",
+      MO: "Opacidade média — mascaramento forte, mas o valor ainda escorrega mesmo em espessuras de 3mm. Uso típico: coroas.",
+      HO: "Alta opacidade — barreira óptica quase total. Uso típico: dupla cimentação (infraestrutura sobre substrato muito escurecido antes do material de cobertura final)."
+    },
+    resultNote: (t,i,s) => `Cor final prevista para pastilha ${t} ${i} sobre substrato ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `Nesta configuração, o substrato <strong>${sub}</strong> penetra opticamente cerca de <strong>${pct}%</strong> em valor e exerce <strong>${pctChroma}%</strong> de pressão de croma — considerando translucidez ${t} e espessura de ${th}mm. Substratos mais saturados empurram mais, e essa pressão só é contida por espessura e opacidade. `,
+    bleachWarn: `<br><br><strong>Atenção — saída da escala bleach:</strong> a pressão de croma do substrato foi suficiente para "contaminar" a pastilha bleach. O resultado escorrega para a escala convencional — o paciente não vai perceber a peça como bleach. Para segurar a escala BL, é preciso mais opacidade, mais espessura, ou controle do substrato antes da peça final. `,
+    thinWarn: `A espessura fina <strong>amplifica</strong> a influência do substrato — abaixo de 0,5mm nenhuma translucidez entrega resultado previsível. `,
+    plateauWarn: `Acima de ~1mm o mascaramento entra em <strong>platô</strong>: adicionar mais espessura quase não muda a cor — o que ainda escorrega (como o valor) escorrega mesmo em 3mm. A partir daqui, quem decide é a translucidez da pastilha, não a espessura. `,
+    famShiftWarn: `<br><br><strong>Atenção — mudança de família:</strong> a alta translucidez não consegue "segurar" o matiz da pastilha. Em vez de o substrato simplesmente aparecer, a HT dilui o croma e derruba o valor ao mesmo tempo, empurrando a leitura para o eixo acinzentado (família C). É o clássico HT A1 sobre A3 → C1.`,
+    lowValueWarn: `<br><br>A família de cor se mantém, mas o <strong>valor cai</strong> — o resultado lê mais escuro/acinzentado que a referência da escala. `,
+    lowValueFix: `Um cimento de <strong>+valor</strong> pode recuperar parte dessa luminosidade.`,
+    cemLeverage: (label,pct) => `<br><br>O cimento <strong>${label}</strong> está operando com <strong>${pct}% de alavancagem</strong> nesta configuração. `,
+    cemHigh: `Em peça fina e translúcida como esta, o cimento é uma ferramenta real de correção — mexe em valor <em>e</em> saturação. É aqui que a escolha do cimento decide o caso.`,
+    cemMed: `Influência moderada: o cimento ajusta, mas não corrige — a pastilha ainda domina o resultado.`,
+    cemLow: `Nesta espessura/opacidade, o cimento é quase irrelevante para a cor final — a correção precisa vir da pastilha, não da cimentação.`,
+    cemNeutral: (pct) => `<br><br>Cimento neutro: a leitura final é definida por pastilha + substrato. Com <strong>${pct}% de alavancagem disponível</strong> nesta configuração, ${pct >= 55 ? 'um cimento de +valor ou −valor teria efeito real aqui — vale simular.' : 'trocar o cimento pouco mudaria o resultado.'}`,
+    challenges: [
+      { desc:"Paciente quer clarear: substrato A3, lente de 0,5mm. O objetivo é entregar", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Coroa unitária sobre preparo A3.5, espessura de 1,5mm. Entregar", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Preparo escurecido C3, coroa de 2mm. O dentista pediu", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Caso estético anterior, substrato A2 uniforme, lentes de 0,7mm. Cor alvo", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Substrato A4, coroa de 1,8mm. Paciente quer", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Paciente pós-clareamento quer manter o resultado: substrato A2, lentes de 0,6mm. Alvo", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Caso de alta exigência estética: substrato A3, coroas de 1,5mm. O paciente pediu explicitamente", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Acertou.</strong> ${t} ${i} com cimento ${cem} entrega ${shade} estável nessa configuração.`,
+    verdictMissBase: (shade,low) => `Essa combinação entrega <strong>${shade}${low ? ' com baixo valor' : ''}</strong>, não `,
+    verdictMissFam: ` A alta translucidez deixou o substrato arrastar a família de cor.`,
+    verdictMissLow: ` O valor escorregou — considere pastilha mais opaca, mais espessura ou cimento de +valor.`,
+    verdictTryAgain: ' Ajuste e tente de novo.'
+  },
+  en: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Lithium Disilicate Shade Simulator",
+    subhead: "Build the case: substrate, thickness, ingot, and cement. See how light behaves and what final shade to expect.",
+    tabSim: "Simulator", tabGame: "Challenge Mode",
+    lblSubstrate: "Substrate shade (prep)", lblThickness: "Restoration thickness",
+    lblTranslucency: "Ingot — translucency", lblIngotShade: "Ingot — shade", lblCement: "Cement",
+    opticalTitle: "Case build-up — prep + cement + ingot = final shade",
+    exTitle: "Case reading",
+    disclaimer: "This simulator serves as guidance and reference for material selection. The actual result may vary depending on the brand and type of lithium disilicate used, the layering or staining technique applied, the cement brand, and the polishing performed. Even so, used before cementation, the simulator delivers a far more predictable decision path than choosing blindly. It does not replace shade try-in or individual clinical judgment.",
+    footer: "Atelier Pablio Caetano · Interpretation over execution",
+    challengeTitle: "Clinical case", challengeGenericTitle: "Challenge",
+    checkBtn: "Check my choice", newBtn: "New case",
+    hits: "Hits", tries: "Attempts",
+    stagePreparo: "prep", stagePeca: "restoration", stageCimento: "cement", stagePastilha: "ingot", stageResultado: "final shade",
+    flagFamShift: "Hue family shift", flagBleach: "Dropped out of bleach scale",
+    flagLowValue: "Value loss", flagStable: "Stable result",
+    cementLabels: { neutro:"Neutral", maisvalor:"+ Value", baixovalor:"− Value" },
+    transDesc: {
+      HT: "High translucency — the restoration barely filters the substrate. Typical use: veneers with uniform thickness across all preps.",
+      MT: "Medium translucency — preserves the hue family, but value drops. Typical use: preps with slight thickness variation.",
+      LT: "Low translucency — the ingot imposes its own color; the substrate barely bleeds through. Typical use: cases requiring more value and surface layering.",
+      MO: "Medium opacity — strong masking, but value still slips even at 3mm thickness. Typical use: crowns.",
+      HO: "High opacity — near-total optical barrier. Typical use: double cementation (infrastructure over a heavily discolored substrate before the final layering material)."
+    },
+    resultNote: (t,i,s) => `Predicted final shade for ${t} ${i} ingot over ${s} substrate.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `In this setup, the <strong>${sub}</strong> substrate optically penetrates about <strong>${pct}%</strong> in value and exerts <strong>${pctChroma}%</strong> chroma pressure — given ${t} translucency and ${th}mm thickness. More saturated substrates push harder, and that pressure is only contained by thickness and opacity. `,
+    bleachWarn: `<br><br><strong>Warning — dropped out of the bleach scale:</strong> the substrate's chroma pressure was enough to "contaminate" the bleach ingot. The result slides into the conventional scale — the patient won't perceive the restoration as bleach. To hold the BL scale, you need more opacity, more thickness, or substrate control before the final piece. `,
+    thinWarn: `Thin thickness <strong>amplifies</strong> the substrate's influence — below 0.5mm no translucency delivers a predictable result. `,
+    plateauWarn: `Above ~1mm, masking hits a <strong>plateau</strong>: adding more thickness barely changes the shade — whatever still leaks (like value) leaks even at 3mm. From here on, translucency decides, not thickness. `,
+    famShiftWarn: `<br><br><strong>Warning — family shift:</strong> high translucency can't "hold" the ingot's hue. Instead of the substrate simply showing through, HT dilutes chroma and drops value at the same time, pushing the reading toward the grayish axis (C family). This is the classic HT A1 over A3 → C1.`,
+    lowValueWarn: `<br><br>The hue family holds, but <strong>value drops</strong> — the result reads darker/grayer than the scale reference. `,
+    lowValueFix: `A <strong>+ Value</strong> cement can recover some of that brightness.`,
+    cemLeverage: (label,pct) => `<br><br>The <strong>${label}</strong> cement is operating with <strong>${pct}% leverage</strong> in this setup. `,
+    cemHigh: `In a thin, translucent restoration like this, cement is a real correction tool — it shifts both value <em>and</em> saturation. This is where cement choice decides the case.`,
+    cemMed: `Moderate influence: cement adjusts, but doesn't correct — the ingot still dominates the result.`,
+    cemLow: `At this thickness/opacity, cement is nearly irrelevant to the final shade — correction needs to come from the ingot, not the cementation.`,
+    cemNeutral: (pct) => `<br><br>Neutral cement: the final reading is set by ingot + substrate. With <strong>${pct}% leverage available</strong> in this setup, ${pct >= 55 ? 'a +Value or −Value cement would have a real effect here — worth simulating.' : 'swapping the cement would barely change the result.'}`,
+    challenges: [
+      { desc:"Patient wants a lighter result: A3 substrate, 0.5mm veneer. The goal is to deliver", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Single crown over an A3.5 prep, 1.5mm thickness. Deliver", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Discolored C3 prep, 2mm crown. The dentist asked for", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Anterior esthetic case, uniform A2 substrate, 0.7mm veneers. Target shade", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"A4 substrate, 1.8mm crown. Patient wants", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Post-whitening patient wants to keep the result: A2 substrate, 0.6mm veneers. Target", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"High-demand esthetic case: A3 substrate, 1.5mm crowns. The patient explicitly asked for", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Correct.</strong> ${t} ${i} with ${cem} cement delivers a stable ${shade} in this setup.`,
+    verdictMissBase: (shade,low) => `This combination delivers <strong>${shade}${low ? ' with low value' : ''}</strong>, not `,
+    verdictMissFam: ` High translucency let the substrate drag the hue family.`,
+    verdictMissLow: ` Value slipped — consider a more opaque ingot, more thickness, or a +Value cement.`,
+    verdictTryAgain: ' Adjust and try again.'
+  },
+  es: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Simulador de Color en Disilicato",
+    subhead: "Arma el caso: sustrato, espesor, pastilla y cemento. Observa cómo se comporta la luz y qué color final esperar.",
+    tabSim: "Simulador", tabGame: "Modo Desafío",
+    lblSubstrate: "Color del sustrato (preparo)", lblThickness: "Espesor de la pieza",
+    lblTranslucency: "Pastilla — translucidez", lblIngotShade: "Pastilla — color", lblCement: "Cemento",
+    opticalTitle: "Armado del caso — preparo + cemento + pastilla = color final",
+    exTitle: "Lectura del caso",
+    disclaimer: "El simulador sirve como orientación y referencia para la elección de los materiales. El resultado real puede variar según la marca y el tipo de disilicato utilizado, la técnica de estratificación o maquillaje aplicada, la marca del cemento y el pulido realizado. Aun así, utilizado antes de la cementación, el simulador ofrece un camino de decisión mucho más previsible que elegir a ciegas. No sustituye la prueba de color con try-in ni el juicio clínico individual.",
+    footer: "Atelier Pablio Caetano · Interpretación sobre ejecución",
+    challengeTitle: "Caso clínico", challengeGenericTitle: "Desafío",
+    checkBtn: "Verificar mi elección", newBtn: "Nuevo caso",
+    hits: "Aciertos", tries: "Intentos",
+    stagePreparo: "preparo", stagePeca: "pieza", stageCimento: "cemento", stagePastilha: "pastilla", stageResultado: "color final",
+    flagFamShift: "Cambio de familia de color", flagBleach: "Salió de la escala bleach",
+    flagLowValue: "Pérdida de valor", flagStable: "Resultado estable",
+    cementLabels: { neutro:"Neutro", maisvalor:"+ Valor", baixovalor:"− Valor" },
+    transDesc: {
+      HT: "Alta translucidez — la pieza casi no filtra el sustrato. Uso típico: carillas con espesor uniforme entre todos los preparos.",
+      MT: "Translucidez media — conserva la familia de color, pero el valor baja. Uso típico: preparos con leves variaciones de espesor.",
+      LT: "Baja translucidez — la pastilla impone su propio color; el sustrato se filtra poco. Uso típico: casos que exigen más valor y estratificación de superficie.",
+      MO: "Opacidad media — enmascaramiento fuerte, pero el valor aún se escapa incluso a 3mm de espesor. Uso típico: coronas.",
+      HO: "Alta opacidad — barrera óptica casi total. Uso típico: doble cementación (infraestructura sobre sustrato muy oscurecido antes del material de cobertura final)."
+    },
+    resultNote: (t,i,s) => `Color final previsto para pastilla ${t} ${i} sobre sustrato ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `En esta configuración, el sustrato <strong>${sub}</strong> penetra ópticamente cerca de <strong>${pct}%</strong> en valor y ejerce <strong>${pctChroma}%</strong> de presión de croma — considerando translucidez ${t} y espesor de ${th}mm. Sustratos más saturados empujan más, y esa presión solo se contiene con espesor y opacidad. `,
+    bleachWarn: `<br><br><strong>Atención — salida de la escala bleach:</strong> la presión de croma del sustrato fue suficiente para "contaminar" la pastilla bleach. El resultado se desliza hacia la escala convencional — el paciente no percibirá la pieza como bleach. Para sostener la escala BL, se necesita más opacidad, más espesor, o control del sustrato antes de la pieza final. `,
+    thinWarn: `El espesor fino <strong>amplifica</strong> la influencia del sustrato — por debajo de 0,5mm ninguna translucidez entrega un resultado previsible. `,
+    plateauWarn: `Por encima de ~1mm el enmascaramiento entra en <strong>meseta</strong>: agregar más espesor casi no cambia el color — lo que aún se escapa (como el valor) se escapa incluso a 3mm. A partir de aquí, quien decide es la translucidez de la pastilla, no el espesor. `,
+    famShiftWarn: `<br><br><strong>Atención — cambio de familia:</strong> la alta translucidez no logra "sostener" el matiz de la pastilla. En vez de que el sustrato simplemente se transparente, la HT diluye el croma y baja el valor al mismo tiempo, empujando la lectura hacia el eje grisáceo (familia C). Es el clásico HT A1 sobre A3 → C1.`,
+    lowValueWarn: `<br><br>La familia de color se mantiene, pero el <strong>valor baja</strong> — el resultado se lee más oscuro/grisáceo que la referencia de la escala. `,
+    lowValueFix: `Un cemento de <strong>+valor</strong> puede recuperar parte de esa luminosidad.`,
+    cemLeverage: (label,pct) => `<br><br>El cemento <strong>${label}</strong> está operando con <strong>${pct}% de apalancamiento</strong> en esta configuración. `,
+    cemHigh: `En una pieza fina y translúcida como esta, el cemento es una herramienta real de corrección — modifica valor <em>y</em> saturación. Aquí es donde la elección del cemento decide el caso.`,
+    cemMed: `Influencia moderada: el cemento ajusta, pero no corrige — la pastilla sigue dominando el resultado.`,
+    cemLow: `En este espesor/opacidad, el cemento es casi irrelevante para el color final — la corrección debe venir de la pastilla, no de la cementación.`,
+    cemNeutral: (pct) => `<br><br>Cemento neutro: la lectura final la define pastilla + sustrato. Con <strong>${pct}% de apalancamiento disponible</strong> en esta configuración, ${pct >= 55 ? 'un cemento de +valor o −valor tendría efecto real aquí — vale la pena simular.' : 'cambiar el cemento cambiaría poco el resultado.'}`,
+    challenges: [
+      { desc:"El paciente quiere aclarar: sustrato A3, carilla de 0,5mm. El objetivo es entregar", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Corona unitaria sobre preparo A3.5, espesor de 1,5mm. Entregar", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Preparo oscurecido C3, corona de 2mm. El dentista pidió", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Caso estético anterior, sustrato A2 uniforme, carillas de 0,7mm. Color objetivo", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Sustrato A4, corona de 1,8mm. El paciente quiere", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Paciente post-blanqueamiento quiere mantener el resultado: sustrato A2, carillas de 0,6mm. Objetivo", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Caso de alta exigencia estética: sustrato A3, coronas de 1,5mm. El paciente pidió explícitamente", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Acertaste.</strong> ${t} ${i} con cemento ${cem} entrega ${shade} estable en esta configuración.`,
+    verdictMissBase: (shade,low) => `Esa combinación entrega <strong>${shade}${low ? ' con bajo valor' : ''}</strong>, no `,
+    verdictMissFam: ` La alta translucidez dejó que el sustrato arrastrara la familia de color.`,
+    verdictMissLow: ` El valor se escapó — considera una pastilla más opaca, más espesor o un cemento de +valor.`,
+    verdictTryAgain: ' Ajusta e inténtalo de nuevo.'
+  },
+  fr: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Simulateur de Teinte du Disilicate",
+    subhead: "Construisez le cas : substrat, épaisseur, pastille et ciment. Observez comment la lumière se comporte et quelle teinte finale attendre.",
+    tabSim: "Simulateur", tabGame: "Mode Défi",
+    lblSubstrate: "Teinte du substrat (préparation)", lblThickness: "Épaisseur de la pièce",
+    lblTranslucency: "Pastille — translucidité", lblIngotShade: "Pastille — teinte", lblCement: "Ciment",
+    opticalTitle: "Construction du cas — préparation + ciment + pastille = teinte finale",
+    exTitle: "Lecture du cas",
+    disclaimer: "Le simulateur sert de guide et de référence pour le choix des matériaux. Le résultat réel peut varier selon la marque et le type de disilicate utilisé, la technique de stratification ou de maquillage appliquée, la marque du ciment, et le polissage réalisé. Malgré tout, utilisé avant la cimentation, le simulateur offre une trajectoire de décision bien plus prévisible qu'un choix à l'aveugle. Il ne remplace pas l'essai de teinte ni le jugement clinique individuel.",
+    footer: "Atelier Pablio Caetano · L'interprétation avant l'exécution",
+    challengeTitle: "Cas clinique", challengeGenericTitle: "Défi",
+    checkBtn: "Vérifier mon choix", newBtn: "Nouveau cas",
+    hits: "Réussites", tries: "Essais",
+    stagePreparo: "préparation", stagePeca: "pièce", stageCimento: "ciment", stagePastilha: "pastille", stageResultado: "teinte finale",
+    flagFamShift: "Changement de famille de teinte", flagBleach: "Sortie de l'échelle bleach",
+    flagLowValue: "Perte de valeur", flagStable: "Résultat stable",
+    cementLabels: { neutro:"Neutre", maisvalor:"+ Valeur", baixovalor:"− Valeur" },
+    transDesc: {
+      HT: "Haute translucidité — la pièce filtre à peine le substrat. Usage typique : facettes d'épaisseur uniforme sur toutes les préparations.",
+      MT: "Translucidité moyenne — préserve la famille de teinte, mais la valeur chute. Usage typique : préparations avec de légères variations d'épaisseur.",
+      LT: "Basse translucidité — la pastille impose sa propre couleur ; le substrat filtre peu. Usage typique : cas exigeant plus de valeur et de stratification de surface.",
+      MO: "Opacité moyenne — masquage fort, mais la valeur s'échappe encore même à 3mm d'épaisseur. Usage typique : couronnes.",
+      HO: "Haute opacité — barrière optique quasi totale. Usage typique : double cimentation (infrastructure sur substrat très décoloré avant le matériau de recouvrement final)."
+    },
+    resultNote: (t,i,s) => `Teinte finale prévue pour la pastille ${t} ${i} sur substrat ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `Dans cette configuration, le substrat <strong>${sub}</strong> pénètre optiquement à environ <strong>${pct}%</strong> en valeur et exerce <strong>${pctChroma}%</strong> de pression de chroma — avec une translucidité ${t} et une épaisseur de ${th}mm. Les substrats plus saturés poussent davantage, et cette pression n'est contenue que par l'épaisseur et l'opacité. `,
+    bleachWarn: `<br><br><strong>Attention — sortie de l'échelle bleach :</strong> la pression de chroma du substrat a suffi à "contaminer" la pastille bleach. Le résultat glisse vers l'échelle conventionnelle — le patient ne percevra pas la pièce comme bleach. Pour maintenir l'échelle BL, il faut plus d'opacité, plus d'épaisseur, ou un contrôle du substrat avant la pièce finale. `,
+    thinWarn: `Une épaisseur fine <strong>amplifie</strong> l'influence du substrat — en dessous de 0,5mm, aucune translucidité ne donne de résultat prévisible. `,
+    plateauWarn: `Au-dessus d'~1mm, le masquage atteint un <strong>plateau</strong> : ajouter de l'épaisseur ne change presque plus la teinte — ce qui s'échappe encore (comme la valeur) s'échappe même à 3mm. À partir de là, c'est la translucidité de la pastille qui décide, pas l'épaisseur. `,
+    famShiftWarn: `<br><br><strong>Attention — changement de famille :</strong> la haute translucidité ne parvient pas à "retenir" la teinte de la pastille. Au lieu que le substrat transparaisse simplement, la HT dilue le chroma et fait chuter la valeur en même temps, poussant la lecture vers l'axe grisâtre (famille C). C'est le cas classique HT A1 sur A3 → C1.`,
+    lowValueWarn: `<br><br>La famille de teinte se maintient, mais la <strong>valeur chute</strong> — le résultat paraît plus sombre/grisâtre que la référence de l'échelle. `,
+    lowValueFix: `Un ciment <strong>+valeur</strong> peut récupérer une partie de cette luminosité.`,
+    cemLeverage: (label,pct) => `<br><br>Le ciment <strong>${label}</strong> agit avec un <strong>effet de levier de ${pct}%</strong> dans cette configuration. `,
+    cemHigh: `Dans une pièce fine et translucide comme celle-ci, le ciment est un véritable outil de correction — il modifie valeur <em>et</em> saturation. C'est ici que le choix du ciment décide du cas.`,
+    cemMed: `Influence modérée : le ciment ajuste, mais ne corrige pas — la pastille domine encore le résultat.`,
+    cemLow: `À cette épaisseur/opacité, le ciment est presque sans effet sur la teinte finale — la correction doit venir de la pastille, pas de la cimentation.`,
+    cemNeutral: (pct) => `<br><br>Ciment neutre : la lecture finale est définie par pastille + substrat. Avec <strong>${pct}% d'effet de levier disponible</strong> dans cette configuration, ${pct >= 55 ? 'un ciment +valeur ou −valeur aurait un effet réel ici — à simuler.' : 'changer de ciment changerait peu le résultat.'}`,
+    challenges: [
+      { desc:"La patiente veut une teinte plus claire : substrat A3, facette de 0,5mm. L'objectif est de livrer", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Couronne unitaire sur préparation A3.5, épaisseur de 1,5mm. Livrer", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Préparation décolorée C3, couronne de 2mm. Le dentiste a demandé", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Cas esthétique antérieur, substrat A2 uniforme, facettes de 0,7mm. Teinte cible", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Substrat A4, couronne de 1,8mm. Le patient veut", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Patient post-blanchiment souhaite conserver le résultat : substrat A2, facettes de 0,6mm. Cible", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Cas très exigeant esthétiquement : substrat A3, couronnes de 1,5mm. Le patient a explicitement demandé", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Correct.</strong> ${t} ${i} avec ciment ${cem} donne un ${shade} stable dans cette configuration.`,
+    verdictMissBase: (shade,low) => `Cette combinaison donne <strong>${shade}${low ? ' avec valeur basse' : ''}</strong>, pas `,
+    verdictMissFam: ` La haute translucidité a laissé le substrat entraîner la famille de teinte.`,
+    verdictMissLow: ` La valeur a chuté — envisagez une pastille plus opaque, plus d'épaisseur, ou un ciment +valeur.`,
+    verdictTryAgain: ' Ajustez et réessayez.'
+  },
+  de: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Farbsimulator für Lithiumdisilikat",
+    subhead: "Bauen Sie den Fall auf: Stumpffarbe, Schichtstärke, Rohling und Zement. Sehen Sie, wie sich Licht verhält und welche Endfarbe zu erwarten ist.",
+    tabSim: "Simulator", tabGame: "Herausforderungsmodus",
+    lblSubstrate: "Stumpffarbe (Präparation)", lblThickness: "Schichtstärke der Restauration",
+    lblTranslucency: "Rohling — Transluzenz", lblIngotShade: "Rohling — Farbe", lblCement: "Zement",
+    opticalTitle: "Fallaufbau — Präparation + Zement + Rohling = Endfarbe",
+    exTitle: "Fallauswertung",
+    disclaimer: "Der Simulator dient als Orientierung und Referenz für die Materialauswahl. Das tatsächliche Ergebnis kann je nach Marke und Art des verwendeten Lithiumdisilikats, der angewandten Schicht- oder Malfarbentechnik, der Zementmarke und der durchgeführten Politur abweichen. Dennoch bietet der Simulator, vor der Zementierung eingesetzt, einen deutlich vorhersehbareren Entscheidungsweg als eine Wahl ins Blaue hinein. Er ersetzt keine Farbanprobe oder individuelle klinische Beurteilung.",
+    footer: "Atelier Pablio Caetano · Interpretation vor Ausführung",
+    challengeTitle: "Klinischer Fall", challengeGenericTitle: "Herausforderung",
+    checkBtn: "Meine Wahl prüfen", newBtn: "Neuer Fall",
+    hits: "Treffer", tries: "Versuche",
+    stagePreparo: "Präparation", stagePeca: "Restauration", stageCimento: "Zement", stagePastilha: "Rohling", stageResultado: "Endfarbe",
+    flagFamShift: "Farbfamilienwechsel", flagBleach: "Bleach-Skala verlassen",
+    flagLowValue: "Helligkeitsverlust", flagStable: "Stabiles Ergebnis",
+    cementLabels: { neutro:"Neutral", maisvalor:"+ Helligkeit", baixovalor:"− Helligkeit" },
+    transDesc: {
+      HT: "Hohe Transluzenz — die Restauration filtert den Stumpf kaum. Typischer Einsatz: Veneers mit gleichmäßiger Schichtstärke über alle Präparationen.",
+      MT: "Mittlere Transluzenz — erhält die Farbfamilie, aber die Helligkeit sinkt. Typischer Einsatz: Präparationen mit leichten Schichtstärke-Unterschieden.",
+      LT: "Niedrige Transluzenz — der Rohling setzt seine eigene Farbe durch; der Stumpf dringt kaum durch. Typischer Einsatz: Fälle, die mehr Helligkeit und Oberflächenschichtung erfordern.",
+      MO: "Mittlere Opazität — starke Maskierung, aber die Helligkeit entweicht selbst bei 3mm Schichtstärke noch. Typischer Einsatz: Kronen.",
+      HO: "Hohe Opazität — nahezu vollständige optische Barriere. Typischer Einsatz: doppelte Zementierung (Gerüst über stark verfärbtem Stumpf vor dem finalen Schichtmaterial)."
+    },
+    resultNote: (t,i,s) => `Vorhergesagte Endfarbe für Rohling ${t} ${i} über Stumpf ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `In dieser Konfiguration dringt der Stumpf <strong>${sub}</strong> optisch zu etwa <strong>${pct}%</strong> in der Helligkeit durch und übt <strong>${pctChroma}%</strong> Chroma-Druck aus — bei Transluzenz ${t} und ${th}mm Schichtstärke. Stärker gesättigte Stümpfe drücken mehr, und dieser Druck wird nur durch Schichtstärke und Opazität eingedämmt. `,
+    bleachWarn: `<br><br><strong>Achtung — Bleach-Skala verlassen:</strong> der Chroma-Druck des Stumpfs reichte aus, um den Bleach-Rohling zu "kontaminieren". Das Ergebnis rutscht in die konventionelle Skala — der Patient wird die Restauration nicht als Bleach wahrnehmen. Um die BL-Skala zu halten, braucht es mehr Opazität, mehr Schichtstärke oder Stumpfkontrolle vor der finalen Restauration. `,
+    thinWarn: `Eine dünne Schichtstärke <strong>verstärkt</strong> den Einfluss des Stumpfs — unter 0,5mm liefert keine Transluzenz ein vorhersehbares Ergebnis. `,
+    plateauWarn: `Oberhalb von ~1mm erreicht die Maskierung ein <strong>Plateau</strong>: mehr Schichtstärke ändert die Farbe kaum noch — was noch durchdringt (wie die Helligkeit), dringt auch bei 3mm durch. Ab hier entscheidet die Transluzenz des Rohlings, nicht die Schichtstärke. `,
+    famShiftWarn: `<br><br><strong>Achtung — Familienwechsel:</strong> hohe Transluzenz kann den Farbton des Rohlings nicht "halten". Statt dass der Stumpf einfach durchscheint, verdünnt HT den Chroma und senkt gleichzeitig die Helligkeit, was das Ergebnis in Richtung der gräulichen Achse (Familie C) drückt. Der klassische Fall: HT A1 über A3 → C1.`,
+    lowValueWarn: `<br><br>Die Farbfamilie bleibt erhalten, aber die <strong>Helligkeit sinkt</strong> — das Ergebnis wirkt dunkler/gräulicher als die Skalenreferenz. `,
+    lowValueFix: `Ein <strong>+Helligkeit</strong>-Zement kann einen Teil dieser Leuchtkraft zurückgewinnen.`,
+    cemLeverage: (label,pct) => `<br><br>Der Zement <strong>${label}</strong> wirkt in dieser Konfiguration mit <strong>${pct}% Hebelwirkung</strong>. `,
+    cemHigh: `Bei einer dünnen, transluzenten Restauration wie dieser ist der Zement ein echtes Korrekturwerkzeug — er verändert Helligkeit <em>und</em> Sättigung. Hier entscheidet die Zementwahl über den Fall.`,
+    cemMed: `Mäßiger Einfluss: der Zement justiert, korrigiert aber nicht — der Rohling dominiert das Ergebnis weiterhin.`,
+    cemLow: `Bei dieser Schichtstärke/Opazität ist der Zement für die Endfarbe fast irrelevant — die Korrektur muss vom Rohling kommen, nicht von der Zementierung.`,
+    cemNeutral: (pct) => `<br><br>Neutraler Zement: die Endfarbe wird von Rohling + Stumpf bestimmt. Mit <strong>${pct}% verfügbarer Hebelwirkung</strong> in dieser Konfiguration ${pct >= 55 ? 'hätte ein +Helligkeit- oder −Helligkeit-Zement hier eine echte Wirkung — Simulation lohnt sich.' : 'würde ein Zementwechsel das Ergebnis kaum ändern.'}`,
+    challenges: [
+      { desc:"Patient wünscht hellere Farbe: Stumpf A3, Veneer mit 0,5mm. Ziel ist die Farbe", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Einzelkrone auf A3.5-Präparation, 1,5mm Schichtstärke. Liefern Sie", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Verfärbter C3-Stumpf, 2mm Krone. Der Zahnarzt wünscht", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Ästhetischer Frontzahnfall, gleichmäßiger A2-Stumpf, 0,7mm Veneers. Zielfarbe", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Stumpf A4, 1,8mm Krone. Patient wünscht", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Patient nach Bleaching möchte das Ergebnis erhalten: Stumpf A2, 0,6mm Veneers. Ziel", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Ästhetisch sehr anspruchsvoller Fall: Stumpf A3, 1,5mm Kronen. Patient wünschte ausdrücklich", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Richtig.</strong> ${t} ${i} mit ${cem}-Zement ergibt ein stabiles ${shade} in dieser Konfiguration.`,
+    verdictMissBase: (shade,low) => `Diese Kombination ergibt <strong>${shade}${low ? ' mit niedriger Helligkeit' : ''}</strong>, nicht `,
+    verdictMissFam: ` Die hohe Transluzenz ließ den Stumpf die Farbfamilie verschieben.`,
+    verdictMissLow: ` Die Helligkeit ist gesunken — erwägen Sie einen opakeren Rohling, mehr Schichtstärke oder einen +Helligkeit-Zement.`,
+    verdictTryAgain: ' Anpassen und erneut versuchen.'
+  },
+  it: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Simulatore di Colore del Disilicato",
+    subhead: "Componi il caso: substrato, spessore, pastiglia e cemento. Osserva come si comporta la luce e quale colore finale aspettarti.",
+    tabSim: "Simulatore", tabGame: "Modalità Sfida",
+    lblSubstrate: "Colore del substrato (moncone)", lblThickness: "Spessore del restauro",
+    lblTranslucency: "Pastiglia — translucenza", lblIngotShade: "Pastiglia — colore", lblCement: "Cemento",
+    opticalTitle: "Costruzione del caso — moncone + cemento + pastiglia = colore finale",
+    exTitle: "Lettura del caso",
+    disclaimer: "Il simulatore serve come orientamento e riferimento per la scelta dei materiali. Il risultato reale può variare in base alla marca e al tipo di disilicato utilizzato, alla tecnica di stratificazione o pittura applicata, alla marca del cemento e alla lucidatura eseguita. Ciononostante, utilizzato prima della cementazione, il simulatore offre un percorso decisionale molto più prevedibile rispetto a una scelta alla cieca. Non sostituisce la prova colore né il giudizio clinico individuale.",
+    footer: "Atelier Pablio Caetano · Interpretazione sopra l'esecuzione",
+    challengeTitle: "Caso clinico", challengeGenericTitle: "Sfida",
+    checkBtn: "Verifica la mia scelta", newBtn: "Nuovo caso",
+    hits: "Successi", tries: "Tentativi",
+    stagePreparo: "moncone", stagePeca: "restauro", stageCimento: "cemento", stagePastilha: "pastiglia", stageResultado: "colore finale",
+    flagFamShift: "Cambio di famiglia di colore", flagBleach: "Uscito dalla scala bleach",
+    flagLowValue: "Perdita di valore", flagStable: "Risultato stabile",
+    cementLabels: { neutro:"Neutro", maisvalor:"+ Valore", baixovalor:"− Valore" },
+    transDesc: {
+      HT: "Alta translucenza — il restauro filtra a malapena il substrato. Uso tipico: faccette con spessore uniforme su tutti i monconi.",
+      MT: "Translucenza media — mantiene la famiglia di colore, ma il valore scende. Uso tipico: monconi con lievi variazioni di spessore.",
+      LT: "Bassa translucenza — la pastiglia impone il proprio colore; il substrato filtra poco. Uso tipico: casi che richiedono più valore e stratificazione superficiale.",
+      MO: "Opacità media — mascheramento forte, ma il valore sfugge ancora anche a 3mm di spessore. Uso tipico: corone.",
+      HO: "Alta opacità — barriera ottica quasi totale. Uso tipico: doppia cementazione (infrastruttura su substrato molto scurito prima del materiale di rivestimento finale)."
+    },
+    resultNote: (t,i,s) => `Colore finale previsto per pastiglia ${t} ${i} su substrato ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `In questa configurazione, il substrato <strong>${sub}</strong> penetra otticamente per circa <strong>${pct}%</strong> in valore ed esercita <strong>${pctChroma}%</strong> di pressione di croma — con translucenza ${t} e spessore di ${th}mm. Substrati più saturi spingono di più, e questa pressione è contenuta solo da spessore e opacità. `,
+    bleachWarn: `<br><br><strong>Attenzione — uscita dalla scala bleach:</strong> la pressione di croma del substrato è bastata a "contaminare" la pastiglia bleach. Il risultato scivola verso la scala convenzionale — il paziente non percepirà il restauro come bleach. Per mantenere la scala BL serve più opacità, più spessore, o controllo del substrato prima del restauro finale. `,
+    thinWarn: `Uno spessore sottile <strong>amplifica</strong> l'influenza del substrato — sotto 0,5mm nessuna translucenza dà un risultato prevedibile. `,
+    plateauWarn: `Sopra ~1mm il mascheramento raggiunge un <strong>plateau</strong>: aggiungere spessore cambia poco il colore — ciò che sfugge ancora (come il valore) sfugge anche a 3mm. Da qui in poi decide la translucenza della pastiglia, non lo spessore. `,
+    famShiftWarn: `<br><br><strong>Attenzione — cambio di famiglia:</strong> l'alta translucenza non riesce a "trattenere" la tonalità della pastiglia. Invece che il substrato traspaia semplicemente, la HT diluisce il croma e abbassa il valore contemporaneamente, spingendo la lettura verso l'asse grigiastro (famiglia C). È il classico HT A1 su A3 → C1.`,
+    lowValueWarn: `<br><br>La famiglia di colore si mantiene, ma il <strong>valore scende</strong> — il risultato appare più scuro/grigiastro rispetto al riferimento della scala. `,
+    lowValueFix: `Un cemento <strong>+valore</strong> può recuperare parte di questa luminosità.`,
+    cemLeverage: (label,pct) => `<br><br>Il cemento <strong>${label}</strong> opera con una <strong>leva del ${pct}%</strong> in questa configurazione. `,
+    cemHigh: `In un restauro sottile e translucido come questo, il cemento è uno strumento reale di correzione — modifica valore <em>e</em> saturazione. È qui che la scelta del cemento decide il caso.`,
+    cemMed: `Influenza moderata: il cemento regola, ma non corregge — la pastiglia domina ancora il risultato.`,
+    cemLow: `A questo spessore/opacità, il cemento è quasi irrilevante per il colore finale — la correzione deve venire dalla pastiglia, non dalla cementazione.`,
+    cemNeutral: (pct) => `<br><br>Cemento neutro: la lettura finale è definita da pastiglia + substrato. Con <strong>${pct}% di leva disponibile</strong> in questa configurazione, ${pct >= 55 ? 'un cemento +valore o −valore avrebbe un effetto reale qui — vale la pena simulare.' : 'cambiare cemento cambierebbe poco il risultato.'}`,
+    challenges: [
+      { desc:"La paziente vuole un colore più chiaro: substrato A3, faccetta di 0,5mm. L'obiettivo è ottenere", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Corona singola su moncone A3.5, spessore di 1,5mm. Ottenere", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Moncone scurito C3, corona di 2mm. Il dentista ha richiesto", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Caso estetico anteriore, substrato A2 uniforme, faccette di 0,7mm. Colore target", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Substrato A4, corona di 1,8mm. Il paziente vuole", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Paziente post-sbiancamento vuole mantenere il risultato: substrato A2, faccette di 0,6mm. Target", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Caso ad alta esigenza estetica: substrato A3, corone di 1,5mm. Il paziente ha chiesto esplicitamente", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Corretto.</strong> ${t} ${i} con cemento ${cem} dà un ${shade} stabile in questa configurazione.`,
+    verdictMissBase: (shade,low) => `Questa combinazione dà <strong>${shade}${low ? ' con valore basso' : ''}</strong>, non `,
+    verdictMissFam: ` L'alta translucenza ha lasciato che il substrato trascinasse la famiglia di colore.`,
+    verdictMissLow: ` Il valore è sceso — considera una pastiglia più opaca, più spessore o un cemento +valore.`,
+    verdictTryAgain: ' Regola e riprova.'
+  },
+  ru: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Симулятор цвета дисиликата лития",
+    subhead: "Соберите клинический случай: субстрат, толщину, заготовку и цемент. Посмотрите, как ведёт себя свет и какой итоговый цвет ожидать.",
+    tabSim: "Симулятор", tabGame: "Режим вызова",
+    lblSubstrate: "Цвет субстрата (препарирования)", lblThickness: "Толщина реставрации",
+    lblTranslucency: "Заготовка — транслюцентность", lblIngotShade: "Заготовка — цвет", lblCement: "Цемент",
+    opticalTitle: "Сборка случая — препарирование + цемент + заготовка = итоговый цвет",
+    exTitle: "Анализ случая",
+    disclaimer: "Симулятор служит ориентиром и справочным материалом для выбора материалов. Фактический результат может отличаться в зависимости от бренда и типа используемого дисиликата, техники наслоения или окрашивания, бренда цемента и выполненной полировки. Тем не менее, при использовании перед фиксацией симулятор даёт гораздо более предсказуемый путь принятия решения, чем выбор вслепую. Он не заменяет примерку цвета или индивидуальное клиническое суждение.",
+    footer: "Atelier Pablio Caetano · Интерпретация важнее исполнения",
+    challengeTitle: "Клинический случай", challengeGenericTitle: "Вызов",
+    checkBtn: "Проверить мой выбор", newBtn: "Новый случай",
+    hits: "Верно", tries: "Попытки",
+    stagePreparo: "препарирование", stagePeca: "реставрация", stageCimento: "цемент", stagePastilha: "заготовка", stageResultado: "итоговый цвет",
+    flagFamShift: "Смена цветовой группы", flagBleach: "Выход за пределы шкалы bleach",
+    flagLowValue: "Потеря светлоты", flagStable: "Стабильный результат",
+    cementLabels: { neutro:"Нейтральный", maisvalor:"+ Светлота", baixovalor:"− Светлота" },
+    transDesc: {
+      HT: "Высокая транслюцентность — реставрация почти не фильтрует субстрат. Типичное применение: виниры одинаковой толщины на всех препарированных зубах.",
+      MT: "Средняя транслюцентность — сохраняет цветовую группу, но светлота падает. Типичное применение: препарирования с небольшими различиями толщины.",
+      LT: "Низкая транслюцентность — заготовка диктует собственный цвет; субстрат почти не просвечивает. Типичное применение: случаи, требующие большей светлоты и поверхностной слоистости.",
+      MO: "Средняя опаковость — сильное маскирование, но светлота всё равно теряется даже при толщине 3мм. Типичное применение: коронки.",
+      HO: "Высокая опаковость — почти полный оптический барьер. Типичное применение: двойная фиксация (каркас поверх сильно потемневшего субстрата перед финальным облицовочным материалом)."
+    },
+    resultNote: (t,i,s) => `Прогнозируемый итоговый цвет для заготовки ${t} ${i} поверх субстрата ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `В этой конфигурации субстрат <strong>${sub}</strong> оптически проникает примерно на <strong>${pct}%</strong> по светлоте и оказывает <strong>${pctChroma}%</strong> давления по насыщенности — при транслюцентности ${t} и толщине ${th}мм. Более насыщенные субстраты давят сильнее, и это давление сдерживается только толщиной и опаковостью. `,
+    bleachWarn: `<br><br><strong>Внимание — выход из шкалы bleach:</strong> давления насыщенности субстрата хватило, чтобы "загрязнить" заготовку bleach. Результат смещается в обычную шкалу — пациент не воспримет реставрацию как bleach. Чтобы удержать шкалу BL, нужна большая опаковость, толщина или контроль субстрата перед финальной реставрацией. `,
+    thinWarn: `Тонкая толщина <strong>усиливает</strong> влияние субстрата — при толщине менее 0,5мм ни одна транслюцентность не даёт предсказуемого результата. `,
+    plateauWarn: `Выше ~1мм маскирование выходит на <strong>плато</strong>: увеличение толщины почти не меняет цвет — то, что всё ещё просачивается (например, светлота), просачивается даже при 3мм. Дальше решает транслюцентность заготовки, а не толщина. `,
+    famShiftWarn: `<br><br><strong>Внимание — смена цветовой группы:</strong> высокая транслюцентность не способна "удержать" оттенок заготовки. Вместо того чтобы субстрат просто просвечивал, HT разбавляет насыщенность и одновременно снижает светлоту, смещая результат к сероватой оси (группа C). Это классический случай HT A1 на A3 → C1.`,
+    lowValueWarn: `<br><br>Цветовая группа сохраняется, но <strong>светлота падает</strong> — результат выглядит темнее/серее, чем эталон шкалы. `,
+    lowValueFix: `Цемент <strong>+светлота</strong> может частично восстановить эту яркость.`,
+    cemLeverage: (label,pct) => `<br><br>Цемент <strong>${label}</strong> действует с <strong>рычагом ${pct}%</strong> в этой конфигурации. `,
+    cemHigh: `В такой тонкой и транслюцентной реставрации цемент — реальный инструмент коррекции: он меняет и светлоту, <em>и</em> насыщенность. Именно здесь выбор цемента решает исход случая.`,
+    cemMed: `Умеренное влияние: цемент корректирует, но не исправляет — заготовка всё ещё доминирует в результате.`,
+    cemLow: `При такой толщине/опаковости цемент почти не влияет на итоговый цвет — коррекция должна исходить от заготовки, а не от фиксации.`,
+    cemNeutral: (pct) => `<br><br>Нейтральный цемент: итоговый результат определяется заготовкой и субстратом. При <strong>доступном рычаге ${pct}%</strong> в этой конфигурации ${pct >= 55 ? 'цемент +светлота или −светлота дал бы здесь реальный эффект — стоит смоделировать.' : 'смена цемента почти не изменила бы результат.'}`,
+    challenges: [
+      { desc:"Пациент хочет более светлый цвет: субстрат A3, винир 0,5мм. Цель — получить", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Одиночная коронка на препарировании A3.5, толщина 1,5мм. Получить", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Потемневший субстрат C3, коронка 2мм. Стоматолог запросил", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Эстетический случай на передних зубах, равномерный субстрат A2, виниры 0,7мм. Целевой цвет", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Субстрат A4, коронка 1,8мм. Пациент хочет", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Пациент после отбеливания хочет сохранить результат: субстрат A2, виниры 0,6мм. Цель", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Случай с высокими эстетическими требованиями: субстрат A3, коронки 1,5мм. Пациент явно запросил", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Верно.</strong> ${t} ${i} с цементом ${cem} даёт стабильный ${shade} в этой конфигурации.`,
+    verdictMissBase: (shade,low) => `Эта комбинация даёт <strong>${shade}${low ? ' с пониженной светлотой' : ''}</strong>, а не `,
+    verdictMissFam: ` Высокая транслюцентность позволила субстрату сместить цветовую группу.`,
+    verdictMissLow: ` Светлота упала — рассмотрите более опаковую заготовку, большую толщину или цемент +светлота.`,
+    verdictTryAgain: ' Скорректируйте и попробуйте снова.'
+  },
+  zh: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "二硅酸锂颜色模拟器",
+    subhead: "构建病例：基牙颜色、修复体厚度、瓷块与粘接剂。观察光线如何作用，预测最终颜色。",
+    tabSim: "模拟器", tabGame: "挑战模式",
+    lblSubstrate: "基牙颜色（预备体）", lblThickness: "修复体厚度",
+    lblTranslucency: "瓷块 — 透光度", lblIngotShade: "瓷块 — 颜色", lblCement: "粘接剂",
+    opticalTitle: "病例构成 — 预备体 + 粘接剂 + 瓷块 = 最终颜色",
+    exTitle: "病例解读",
+    disclaimer: "本模拟器用作材料选择的参考和指导。实际结果可能因所用二硅酸锂的品牌和类型、分层或染色技术、粘接剂品牌以及抛光工艺而有所不同。尽管如此，在粘接前使用本模拟器，仍能提供比盲目选择更可预测的决策路径。本工具不能替代试色或个体临床判断。",
+    footer: "Atelier Pablio Caetano · 诠释先于执行",
+    challengeTitle: "临床病例", challengeGenericTitle: "挑战",
+    checkBtn: "验证我的选择", newBtn: "新病例",
+    hits: "正确次数", tries: "尝试次数",
+    stagePreparo: "预备体", stagePeca: "修复体", stageCimento: "粘接剂", stagePastilha: "瓷块", stageResultado: "最终颜色",
+    flagFamShift: "色系发生偏移", flagBleach: "脱离了漂白比色系统",
+    flagLowValue: "明度降低", flagStable: "结果稳定",
+    cementLabels: { neutro:"中性", maisvalor:"+ 明度", baixovalor:"− 明度" },
+    transDesc: {
+      HT: "高透光度 — 修复体几乎不过滤基牙颜色。典型用途：所有预备体厚度均匀的贴面。",
+      MT: "中等透光度 — 保留色系，但明度会下降。典型用途：预备体厚度略有差异的病例。",
+      LT: "低透光度 — 瓷块自身颜色占主导，基牙颜色几乎不透出。典型用途：需要更高明度和表面分层效果的病例。",
+      MO: "中等不透明度 — 遮色能力强，但即使厚度达3mm，明度仍会流失。典型用途：全冠。",
+      HO: "高不透明度 — 几乎完全的光学屏障。典型用途：双重粘接（在严重变色基牙上先做基底结构，再进行最终饰面）。"
+    },
+    resultNote: (t,i,s) => `预测瓷块 ${t} ${i} 覆盖基牙 ${s} 后的最终颜色。`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `在此配置下，基牙 <strong>${sub}</strong> 在明度上大约有 <strong>${pct}%</strong> 的光学穿透，并产生 <strong>${pctChroma}%</strong> 的彩度压力 — 基于 ${t} 透光度和 ${th}mm 厚度。饱和度越高的基牙推动力越强，这种压力只能通过厚度和不透明度来抑制。`,
+    bleachWarn: `<br><br><strong>注意 — 脱离漂白比色系统：</strong>基牙的彩度压力足以"污染"漂白瓷块，结果会滑向常规比色系统 — 患者不会感觉这是漂白效果。要保持BL比色，需要更高的不透明度、更大厚度，或在最终修复前先处理基牙颜色。`,
+    thinWarn: `较薄的厚度会<strong>放大</strong>基牙的影响 — 厚度低于0.5mm时，任何透光度都无法给出可预测的结果。`,
+    plateauWarn: `厚度超过约1mm后，遮色效果进入<strong>平台期</strong>：继续增加厚度几乎不再改变颜色 — 仍会渗透的因素（如明度）即使在3mm时依然渗透。此后起决定作用的是瓷块的透光度，而非厚度。`,
+    famShiftWarn: `<br><br><strong>注意 — 色系偏移：</strong>高透光度无法"守住"瓷块的色相。基牙颜色不是简单地透出来，而是HT同时稀释彩度并降低明度，把结果推向灰色轴（C色系）。这就是典型的 HT A1 覆盖 A3 → C1 的情况。`,
+    lowValueWarn: `<br><br>色系保持不变，但<strong>明度下降</strong> — 结果比比色板参照色更暗/更灰。`,
+    lowValueFix: `使用<strong>+明度</strong>粘接剂可以恢复部分亮度。`,
+    cemLeverage: (label,pct) => `<br><br>在此配置下，<strong>${label}</strong>粘接剂的作用力约为 <strong>${pct}%</strong>。`,
+    cemHigh: `在如此薄且透光的修复体中，粘接剂是真正有效的调色工具 — 它同时影响明度<em>和</em>饱和度。此时粘接剂的选择将决定整个病例。`,
+    cemMed: `影响中等：粘接剂能微调，但无法根本纠正 — 瓷块仍主导最终结果。`,
+    cemLow: `在此厚度/不透明度下，粘接剂对最终颜色几乎没有影响 — 纠正应来自瓷块选择，而非粘接环节。`,
+    cemNeutral: (pct) => `<br><br>中性粘接剂：最终颜色由瓷块+基牙决定。在此配置下可用作用力为 <strong>${pct}%</strong>，${pct >= 55 ? '此时+明度或−明度粘接剂会产生实际效果 — 值得模拟。' : '更换粘接剂对结果影响很小。'}`,
+    challenges: [
+      { desc:"患者希望颜色更浅：基牙A3，贴面厚度0.5mm。目标是达到", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"单冠修复，基牙A3.5，厚度1.5mm。目标颜色", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"变色基牙C3，全冠厚度2mm。医生要求达到", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"前牙美学病例，基牙A2均匀，贴面厚度0.7mm。目标颜色", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"基牙A4，全冠厚度1.8mm。患者希望达到", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"美白后患者希望保持效果：基牙A2，贴面厚度0.6mm。目标", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"高美学要求病例：基牙A3，全冠厚度1.5mm。患者明确要求", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>正确。</strong>在此配置下，${t} ${i} 搭配${cem}粘接剂可稳定获得 ${shade}。`,
+    verdictMissBase: (shade,low) => `这个组合得到的是 <strong>${shade}${low ? '（明度偏低）' : ''}</strong>，而不是 `,
+    verdictMissFam: ` 高透光度使基牙颜色带偏了整个色系。`,
+    verdictMissLow: ` 明度下降了 — 可以考虑更不透明的瓷块、增加厚度，或使用+明度粘接剂。`,
+    verdictTryAgain: ' 请调整后再试一次。'
+  },
+  ja: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "二ケイ酸リチウム色調シミュレーター",
+    subhead: "支台歯の色調、補綴物の厚み、インゴット、セメントを設定し、光の振る舞いと最終的な色調を確認しましょう。",
+    tabSim: "シミュレーター", tabGame: "チャレンジモード",
+    lblSubstrate: "支台歯の色調（形成歯）", lblThickness: "補綴物の厚み",
+    lblTranslucency: "インゴット — 透光性", lblIngotShade: "インゴット — 色調", lblCement: "セメント",
+    opticalTitle: "症例構成 — 形成歯 + セメント + インゴット = 最終色調",
+    exTitle: "症例の読み解き",
+    disclaimer: "本シミュレーターは、材料選択の指針および参考資料として機能します。実際の結果は、使用する二ケイ酸リチウムのメーカーや種類、積層・染色のテクニック、セメントのメーカー、研磨の仕上げによって変わる場合があります。それでも、合着前に使用することで、当てずっぽうで選ぶよりもはるかに予測可能な判断の道筋を得られます。試適や個々の臨床的判断に代わるものではありません。",
+    footer: "Atelier Pablio Caetano · 実行より解釈を",
+    challengeTitle: "臨床症例", challengeGenericTitle: "チャレンジ",
+    checkBtn: "選択を確認する", newBtn: "新しい症例",
+    hits: "正解数", tries: "試行回数",
+    stagePreparo: "形成歯", stagePeca: "補綴物", stageCimento: "セメント", stagePastilha: "インゴット", stageResultado: "最終色調",
+    flagFamShift: "色相系統の変化", flagBleach: "ブリーチシェードから逸脱",
+    flagLowValue: "明度の低下", flagStable: "安定した結果",
+    cementLabels: { neutro:"ニュートラル", maisvalor:"+ 明度", baixovalor:"− 明度" },
+    transDesc: {
+      HT: "高透光性 — 補綴物は支台歯をほとんど遮断しません。典型的な用途：すべての形成歯で厚みが均一なベニア。",
+      MT: "中程度の透光性 — 色相系統は保たれますが明度が低下します。典型的な用途：厚みにわずかなばらつきがある形成歯。",
+      LT: "低透光性 — インゴット自体の色が優勢になり、支台歯の色はほとんど透けません。典型的な用途：より高い明度と表面の積層表現が必要な症例。",
+      MO: "中程度の不透明度 — マスキング効果は強いものの、3mmの厚みでも明度はわずかに漏れます。典型的な用途：クラウン。",
+      HO: "高い不透明度 — ほぼ完全な光学的バリア。典型的な用途：二重合着（最終築盛材の前に、著しく変色した支台歯上にコアを作る場合）。"
+    },
+    resultNote: (t,i,s) => `${t} ${i} インゴットを支台歯 ${s} に使用した場合の予測最終色調。`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `この条件では、支台歯 <strong>${sub}</strong> は明度において約<strong>${pct}%</strong>光学的に透過し、<strong>${pctChroma}%</strong>の彩度圧を及ぼします — 透光性${t}、厚み${th}mmの場合です。彩度の高い支台歯ほど圧力が強く、この圧力は厚みと不透明度によってのみ抑えられます。`,
+    bleachWarn: `<br><br><strong>注意 — ブリーチシェードからの逸脱：</strong>支台歯の彩度圧がブリーチ用インゴットを「汚染」するのに十分な強さでした。結果は通常のシェードスケールへとずれ、患者はブリーチシェードとして認識しません。BLスケールを維持するには、より高い不透明度、より大きな厚み、あるいは最終補綴前の支台歯コントロールが必要です。`,
+    thinWarn: `厚みが薄いと支台歯の影響が<strong>増幅</strong>されます — 0.5mm未満では、どの透光性でも予測可能な結果は得られません。`,
+    plateauWarn: `約1mmを超えると、マスキング効果は<strong>プラトー</strong>に達します：厚みを増やしても色調はほとんど変化しません — 明度のように漏れ続ける要素は3mmでも漏れ続けます。ここから先は厚みではなくインゴットの透光性が結果を決めます。`,
+    famShiftWarn: `<br><br><strong>注意 — 色相系統の変化：</strong>高い透光性ではインゴットの色相を「保持」できません。支台歯が単に透けて見えるのではなく、HTが彩度を薄めながら同時に明度を下げ、結果を灰色軸（C系統）へと押しやります。典型的な例が HT A1 on A3 → C1 です。`,
+    lowValueWarn: `<br><br>色相系統は維持されますが、<strong>明度が低下</strong>し、結果はスケールの基準よりも暗く/灰色がかって見えます。`,
+    lowValueFix: `<strong>+明度</strong>のセメントを使うことで、この明るさをある程度回復できます。`,
+    cemLeverage: (label,pct) => `<br><br>この条件では、<strong>${label}</strong>セメントが<strong>${pct}%のレバレッジ</strong>で作用しています。`,
+    cemHigh: `このような薄く透光性の高い補綴物では、セメントは明度<em>と</em>彩度の両方を変化させる、実質的な補正ツールになります。ここでセメントの選択が症例を左右します。`,
+    cemMed: `影響は中程度です：セメントは調整はしますが根本的な補正はできません — インゴットが結果を支配し続けます。`,
+    cemLow: `この厚み・不透明度では、セメントは最終色調にほとんど影響しません — 補正はセメントではなくインゴット側から行う必要があります。`,
+    cemNeutral: (pct) => `<br><br>ニュートラルセメント：最終的な色調はインゴットと支台歯によって決まります。この条件で利用可能なレバレッジは<strong>${pct}%</strong>で、${pct >= 55 ? 'ここでは+明度または−明度のセメントが実際に効果を持つ可能性があります — シミュレーションする価値があります。' : 'セメントを変更しても結果はほとんど変わらないでしょう。'}`,
+    challenges: [
+      { desc:"患者はより明るい色を希望：支台歯A3、厚み0.5mmのベニア。目標は", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"支台歯A3.5への単冠、厚み1.5mm。目標色調", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"変色した支台歯C3、厚み2mmのクラウン。歯科医師の希望色調", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"前歯部の審美症例、均一な支台歯A2、厚み0.7mmのベニア。目標色調", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"支台歯A4、厚み1.8mmのクラウン。患者の希望色調", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"ホワイトニング後の患者が結果の維持を希望：支台歯A2、厚み0.6mmのベニア。目標", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"審美的要求の高い症例：支台歯A3、厚み1.5mmのクラウン。患者が明確に希望した色調", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>正解です。</strong>${t} ${i} と${cem}セメントの組み合わせは、この条件で安定した ${shade} を実現します。`,
+    verdictMissBase: (shade,low) => `この組み合わせで得られるのは <strong>${shade}${low ? '（明度低め）' : ''}</strong>であり、`,
+    verdictMissFam: ` 高い透光性により支台歯が色相系統を引きずってしまいました。`,
+    verdictMissLow: ` 明度が低下しました — より不透明なインゴット、厚みの増加、または+明度セメントの使用を検討してください。`,
+    verdictTryAgain: ' 調整してもう一度お試しください。'
+  },
+  ko: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "이규산리튬 색상 시뮬레이터",
+    subhead: "지대치 색상, 보철물 두께, 잉곳, 시멘트를 설정하세요. 빛이 어떻게 작용하는지, 최종 색상이 무엇일지 확인해 보세요.",
+    tabSim: "시뮬레이터", tabGame: "챌린지 모드",
+    lblSubstrate: "지대치 색상 (형성치아)", lblThickness: "보철물 두께",
+    lblTranslucency: "잉곳 — 투광도", lblIngotShade: "잉곳 — 색상", lblCement: "시멘트",
+    opticalTitle: "케이스 구성 — 형성치아 + 시멘트 + 잉곳 = 최종 색상",
+    exTitle: "케이스 분석",
+    disclaimer: "본 시뮬레이터는 재료 선택을 위한 지침 및 참고 자료로 사용됩니다. 실제 결과는 사용하는 이규산리튬의 브랜드와 종류, 적용된 적층 또는 착색 기법, 시멘트 브랜드, 그리고 시행된 연마에 따라 달라질 수 있습니다. 그럼에도 불구하고 합착 전에 사용하면, 무작정 선택하는 것보다 훨씬 더 예측 가능한 의사결정 경로를 제공합니다. 시적(try-in)이나 개별 임상 판단을 대체하지 않습니다.",
+    footer: "Atelier Pablio Caetano · 실행보다 해석",
+    challengeTitle: "임상 케이스", challengeGenericTitle: "챌린지",
+    checkBtn: "내 선택 확인하기", newBtn: "새 케이스",
+    hits: "정답 수", tries: "시도 횟수",
+    stagePreparo: "형성치아", stagePeca: "보철물", stageCimento: "시멘트", stagePastilha: "잉곳", stageResultado: "최종 색상",
+    flagFamShift: "색상군 변화", flagBleach: "블리치 스케일 이탈",
+    flagLowValue: "명도 저하", flagStable: "안정적인 결과",
+    cementLabels: { neutro:"중성", maisvalor:"+ 명도", baixovalor:"− 명도" },
+    transDesc: {
+      HT: "고투광도 — 보철물이 지대치를 거의 걸러내지 않습니다. 일반적 용도: 모든 형성치아의 두께가 균일한 비니어.",
+      MT: "중간 투광도 — 색상군은 유지되지만 명도가 떨어집니다. 일반적 용도: 두께가 약간 차이 나는 형성치아.",
+      LT: "저투광도 — 잉곳 자체 색상이 우세하며 지대치가 거의 비치지 않습니다. 일반적 용도: 더 높은 명도와 표면 층상 표현이 필요한 케이스.",
+      MO: "중간 불투명도 — 강한 마스킹 효과이지만 3mm 두께에서도 명도는 여전히 새어 나옵니다. 일반적 용도: 크라운.",
+      HO: "고불투명도 — 거의 완전한 광학적 차단막. 일반적 용도: 이중 합착(심하게 변색된 지대치 위에 최종 적층재 전 코어를 제작하는 경우)."
+    },
+    resultNote: (t,i,s) => `잉곳 ${t} ${i}를 지대치 ${s}에 사용했을 때 예상되는 최종 색상입니다.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `이 설정에서 지대치 <strong>${sub}</strong>는 명도 면에서 약 <strong>${pct}%</strong> 광학적으로 투과하며, <strong>${pctChroma}%</strong>의 채도 압력을 가합니다 — 투광도 ${t}, 두께 ${th}mm 기준입니다. 채도가 높은 지대치일수록 더 강하게 밀어붙이며, 이 압력은 두께와 불투명도로만 억제됩니다. `,
+    bleachWarn: `<br><br><strong>주의 — 블리치 스케일 이탈:</strong> 지대치의 채도 압력이 블리치 잉곳을 "오염"시킬 만큼 강했습니다. 결과가 일반 스케일로 이동하여 환자는 이를 블리치 색상으로 인식하지 못합니다. BL 스케일을 유지하려면 더 높은 불투명도, 더 큰 두께, 또는 최종 보철 전 지대치 조절이 필요합니다. `,
+    thinWarn: `얇은 두께는 지대치의 영향을 <strong>증폭</strong>시킵니다 — 0.5mm 미만에서는 어떤 투광도로도 예측 가능한 결과를 얻을 수 없습니다. `,
+    plateauWarn: `약 1mm를 넘으면 마스킹 효과가 <strong>정체 구간(플래토)</strong>에 도달합니다: 두께를 더해도 색상은 거의 변하지 않습니다 — 명도처럼 여전히 새어 나오는 요소는 3mm에서도 새어 나옵니다. 이 지점부터는 두께가 아니라 잉곳의 투광도가 결과를 결정합니다. `,
+    famShiftWarn: `<br><br><strong>주의 — 색상군 변화:</strong> 높은 투광도는 잉곳의 색조를 "유지"하지 못합니다. 지대치가 단순히 비쳐 보이는 것이 아니라, HT가 채도를 희석시키면서 동시에 명도를 낮춰 결과를 회색조 축(C군)으로 밀어냅니다. 전형적인 예가 A3 위의 HT A1 → C1입니다.`,
+    lowValueWarn: `<br><br>색상군은 유지되지만 <strong>명도가 저하</strong>되어 결과가 스케일 기준보다 더 어둡거나 회색조로 보입니다. `,
+    lowValueFix: `<strong>+명도</strong> 시멘트를 사용하면 이 밝기의 일부를 회복할 수 있습니다.`,
+    cemLeverage: (label,pct) => `<br><br>이 설정에서 <strong>${label}</strong> 시멘트는 <strong>${pct}%의 레버리지</strong>로 작용하고 있습니다. `,
+    cemHigh: `이처럼 얇고 투광성이 높은 보철물에서는 시멘트가 실질적인 보정 도구가 됩니다 — 명도와 채도 모두에 영향을 미칩니다. 이 경우 시멘트 선택이 케이스의 성패를 좌우합니다.`,
+    cemMed: `중간 정도의 영향: 시멘트가 미세 조정은 하지만 근본적으로 보정하지는 못합니다 — 잉곳이 여전히 결과를 좌우합니다.`,
+    cemLow: `이 두께/불투명도에서는 시멘트가 최종 색상에 거의 영향을 미치지 않습니다 — 보정은 시멘트가 아니라 잉곳 선택에서 이루어져야 합니다.`,
+    cemNeutral: (pct) => `<br><br>중성 시멘트: 최종 결과는 잉곳과 지대치에 의해 결정됩니다. 이 설정에서 사용 가능한 레버리지는 <strong>${pct}%</strong>이며, ${pct >= 55 ? '이 경우 +명도 또는 −명도 시멘트가 실제로 효과를 발휘할 수 있습니다 — 시뮬레이션해 볼 가치가 있습니다.' : '시멘트를 변경해도 결과는 거의 달라지지 않을 것입니다.'}`,
+    challenges: [
+      { desc:"환자가 더 밝은 색상을 원함: 지대치 A3, 두께 0.5mm 비니어. 목표는", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"A3.5 형성치아 위 단일 크라운, 두께 1.5mm. 목표 색상", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"변색된 C3 지대치, 두께 2mm 크라운. 치과의사가 요청한 색상", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"전치부 심미 케이스, 균일한 A2 지대치, 두께 0.7mm 비니어. 목표 색상", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"지대치 A4, 두께 1.8mm 크라운. 환자가 원하는 색상", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"미백 후 환자가 결과 유지를 원함: 지대치 A2, 두께 0.6mm 비니어. 목표", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"심미적 요구가 높은 케이스: 지대치 A3, 두께 1.5mm 크라운. 환자가 명확히 요청한 색상", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>정답입니다.</strong> ${t} ${i}와 ${cem} 시멘트 조합은 이 설정에서 안정적인 ${shade}를 제공합니다.`,
+    verdictMissBase: (shade,low) => `이 조합은 <strong>${shade}${low ? ' (명도 낮음)' : ''}</strong>를 제공하며, `,
+    verdictMissFam: ` 높은 투광도로 인해 지대치가 색상군을 끌어당겼습니다.`,
+    verdictMissLow: ` 명도가 저하되었습니다 — 더 불투명한 잉곳, 더 큰 두께, 또는 +명도 시멘트를 고려해 보세요.`,
+    verdictTryAgain: ' 조정 후 다시 시도해 보세요.'
+  },
+  ar: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "محاكي لون ثنائي سيليكات الليثيوم",
+    subhead: "قم ببناء الحالة: لون الركيزة، السماكة، القالب، والأسمنت. شاهد كيف يتصرف الضوء وما هو اللون النهائي المتوقع.",
+    tabSim: "المحاكي", tabGame: "وضع التحدي",
+    lblSubstrate: "لون الركيزة (السن المحضّر)", lblThickness: "سماكة الترميم",
+    lblTranslucency: "القالب — الشفافية", lblIngotShade: "القالب — اللون", lblCement: "الأسمنت",
+    opticalTitle: "بناء الحالة — التحضير + الأسمنت + القالب = اللون النهائي",
+    exTitle: "قراءة الحالة",
+    disclaimer: "يُستخدم المحاكي كدليل ومرجع لاختيار المواد. قد تختلف النتيجة الفعلية باختلاف العلامة التجارية ونوع ثنائي السيليكات المستخدم، وتقنية الطبقات أو التلوين المطبقة، والعلامة التجارية للأسمنت، والتلميع المُنجز. ومع ذلك، عند استخدامه قبل التثبيت، يوفر المحاكي مسار قرار أكثر قابلية للتنبؤ بكثير من الاختيار العشوائي. لا يغني عن تجربة اللون السريرية أو الحكم السريري الفردي.",
+    footer: "Atelier Pablio Caetano · التفسير قبل التنفيذ",
+    challengeTitle: "حالة سريرية", challengeGenericTitle: "تحدٍ",
+    checkBtn: "تحقق من اختياري", newBtn: "حالة جديدة",
+    hits: "الإجابات الصحيحة", tries: "المحاولات",
+    stagePreparo: "التحضير", stagePeca: "الترميم", stageCimento: "الأسمنت", stagePastilha: "القالب", stageResultado: "اللون النهائي",
+    flagFamShift: "تغيّر في عائلة اللون", flagBleach: "خروج عن مقياس التبييض",
+    flagLowValue: "فقدان في القيمة (الإضاءة)", flagStable: "نتيجة مستقرة",
+    cementLabels: { neutro:"محايد", maisvalor:"+ قيمة", baixovalor:"− قيمة" },
+    transDesc: {
+      HT: "شفافية عالية — الترميم لا يُصفّي لون الركيزة تقريبًا. الاستخدام النموذجي: قشور بسماكة موحّدة عبر جميع التحضيرات.",
+      MT: "شفافية متوسطة — تحافظ على عائلة اللون، لكن القيمة تنخفض. الاستخدام النموذجي: تحضيرات بفروقات طفيفة في السماكة.",
+      LT: "شفافية منخفضة — يفرض القالب لونه الخاص؛ ولا تكاد الركيزة تظهر من خلاله. الاستخدام النموذجي: الحالات التي تتطلب قيمة أعلى وطبقات سطحية.",
+      MO: "عتامة متوسطة — تغطية قوية، لكن القيمة لا تزال تتسرب حتى عند سماكة 3مم. الاستخدام النموذجي: التيجان.",
+      HO: "عتامة عالية — حاجز بصري شبه كامل. الاستخدام النموذجي: التثبيت المزدوج (بنية تحتية فوق ركيزة داكنة جدًا قبل مادة التغطية النهائية)."
+    },
+    resultNote: (t,i,s) => `اللون النهائي المتوقع لقالب ${t} ${i} فوق ركيزة ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `في هذا الإعداد، تخترق الركيزة <strong>${sub}</strong> بصريًا بنسبة <strong>${pct}%</strong> تقريبًا في القيمة، وتمارس <strong>${pctChroma}%</strong> من ضغط التشبع اللوني — مع شفافية ${t} وسماكة ${th}مم. الركائز الأكثر تشبعًا تدفع أكثر، ولا يُحتوى هذا الضغط إلا بالسماكة والعتامة. `,
+    bleachWarn: `<br><br><strong>تنبيه — خروج عن مقياس التبييض:</strong> كان ضغط التشبع اللوني للركيزة كافيًا "لتلويث" قالب التبييض. تنزلق النتيجة نحو المقياس التقليدي — ولن يدرك المريض الترميم كلون تبييض. للحفاظ على مقياس BL، يلزم مزيد من العتامة أو السماكة أو التحكم بلون الركيزة قبل الترميم النهائي. `,
+    thinWarn: `السماكة الرقيقة <strong>تضخّم</strong> تأثير الركيزة — تحت 0.5مم لا تعطي أي درجة شفافية نتيجة يمكن التنبؤ بها. `,
+    plateauWarn: `فوق حوالي 1مم، يصل التغطية إلى <strong>مستوى ثابت</strong>: زيادة السماكة لا تغيّر اللون كثيرًا — وما زال يتسرب (مثل القيمة) حتى عند 3مم. من هنا فصاعدًا، شفافية القالب هي التي تقرر، وليس السماكة. `,
+    famShiftWarn: `<br><br><strong>تنبيه — تغيّر عائلة اللون:</strong> لا تستطيع الشفافية العالية "الاحتفاظ" بدرجة لون القالب. فبدلًا من أن تظهر الركيزة ببساطة، تعمل HT على تخفيف التشبع اللوني وخفض القيمة في آن واحد، مما يدفع القراءة نحو المحور الرمادي (عائلة C). هذه هي الحالة الكلاسيكية: HT A1 فوق A3 → C1.`,
+    lowValueWarn: `<br><br>تبقى عائلة اللون كما هي، لكن <strong>القيمة تنخفض</strong> — تظهر النتيجة أغمق/أكثر رمادية من مرجع المقياس. `,
+    lowValueFix: `يمكن لأسمنت <strong>+قيمة</strong> استعادة جزء من هذا السطوع.`,
+    cemLeverage: (label,pct) => `<br><br>يعمل أسمنت <strong>${label}</strong> بتأثير رافعة نسبته <strong>${pct}%</strong> في هذا الإعداد. `,
+    cemHigh: `في ترميم رقيق وشفاف كهذا، يُعد الأسمنت أداة تصحيح حقيقية — فهو يغيّر القيمة <em>والتشبع اللوني</em> معًا. هنا يقرر اختيار الأسمنت مصير الحالة.`,
+    cemMed: `تأثير معتدل: الأسمنت يضبط لكن لا يصحح — يبقى القالب هو المسيطر على النتيجة.`,
+    cemLow: `عند هذه السماكة/العتامة، يكاد الأسمنت لا يؤثر على اللون النهائي — يجب أن يأتي التصحيح من القالب، لا من التثبيت.`,
+    cemNeutral: (pct) => `<br><br>أسمنت محايد: تتحدد القراءة النهائية بالقالب والركيزة. مع <strong>تأثير رافعة متاح بنسبة ${pct}%</strong> في هذا الإعداد، ${pct >= 55 ? 'سيكون لأسمنت +قيمة أو −قيمة تأثير حقيقي هنا — يستحق التجربة.' : 'تغيير الأسمنت لن يغيّر النتيجة كثيرًا.'}`,
+    challenges: [
+      { desc:"يرغب المريض بلون أفتح: ركيزة A3، قشرة بسماكة 0.5مم. الهدف هو تحقيق", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"تاج منفرد فوق تحضير A3.5، بسماكة 1.5مم. تحقيق", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"ركيزة داكنة C3، تاج بسماكة 2مم. طلب طبيب الأسنان", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"حالة تجميلية أمامية، ركيزة A2 موحّدة، قشور بسماكة 0.7مم. اللون المستهدف", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"ركيزة A4، تاج بسماكة 1.8مم. يرغب المريض بـ", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"مريض بعد التبييض يرغب بالحفاظ على النتيجة: ركيزة A2، قشور بسماكة 0.6مم. الهدف", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"حالة ذات متطلبات تجميلية عالية: ركيزة A3، تيجان بسماكة 1.5مم. طلب المريض صراحة", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>إجابة صحيحة.</strong> ${t} ${i} مع أسمنت ${cem} يعطي ${shade} مستقرًا في هذا الإعداد.`,
+    verdictMissBase: (shade,low) => `هذا المزيج يعطي <strong>${shade}${low ? ' بقيمة منخفضة' : ''}</strong>، وليس `,
+    verdictMissFam: ` سمحت الشفافية العالية للركيزة بجرّ عائلة اللون.`,
+    verdictMissLow: ` انخفضت القيمة — فكّر في قالب أكثر عتامة، أو سماكة أكبر، أو أسمنت +قيمة.`,
+    verdictTryAgain: ' اضبط المعطيات وحاول مجددًا.'
+  },
+  el: {
+    eyebrow: "Atelier Pablio Caetano — NL Light Refraction",
+    title: "Προσομοιωτής Χρώματος Δισιλικιούχου Λιθίου",
+    subhead: "Χτίστε την περίπτωση: υπόστρωμα, πάχος, ένθεμα και τσιμέντο. Δείτε πώς συμπεριφέρεται το φως και ποιο τελικό χρώμα να περιμένετε.",
+    tabSim: "Προσομοιωτής", tabGame: "Λειτουργία Πρόκλησης",
+    lblSubstrate: "Χρώμα υποστρώματος (παρασκευή)", lblThickness: "Πάχος αποκατάστασης",
+    lblTranslucency: "Ένθεμα — διαφάνεια", lblIngotShade: "Ένθεμα — χρώμα", lblCement: "Τσιμέντο",
+    opticalTitle: "Δομή περίπτωσης — παρασκευή + τσιμέντο + ένθεμα = τελικό χρώμα",
+    exTitle: "Ανάγνωση περίπτωσης",
+    disclaimer: "Ο προσομοιωτής χρησιμεύει ως καθοδήγηση και σημείο αναφοράς για την επιλογή υλικών. Το πραγματικό αποτέλεσμα μπορεί να διαφέρει ανάλογα με τη μάρκα και τον τύπο του δισιλικιούχου λιθίου που χρησιμοποιείται, την τεχνική στρωματοποίησης ή χρωματισμού που εφαρμόζεται, τη μάρκα του τσιμέντου και τη στίλβωση που πραγματοποιείται. Παρ' όλα αυτά, όταν χρησιμοποιείται πριν την τσιμέντωση, ο προσομοιωτής προσφέρει μια πολύ πιο προβλέψιμη πορεία απόφασης σε σχέση με μια τυχαία επιλογή. Δεν αντικαθιστά τη δοκιμή χρώματος ούτε την ατομική κλινική κρίση.",
+    footer: "Atelier Pablio Caetano · Η ερμηνεία πάνω από την εκτέλεση",
+    challengeTitle: "Κλινική περίπτωση", challengeGenericTitle: "Πρόκληση",
+    checkBtn: "Έλεγχος επιλογής μου", newBtn: "Νέα περίπτωση",
+    hits: "Επιτυχίες", tries: "Προσπάθειες",
+    stagePreparo: "παρασκευή", stagePeca: "αποκατάσταση", stageCimento: "τσιμέντο", stagePastilha: "ένθεμα", stageResultado: "τελικό χρώμα",
+    flagFamShift: "Μετατόπιση οικογένειας χρώματος", flagBleach: "Έξοδος από την κλίμακα bleach",
+    flagLowValue: "Απώλεια φωτεινότητας", flagStable: "Σταθερό αποτέλεσμα",
+    cementLabels: { neutro:"Ουδέτερο", maisvalor:"+ Φωτεινότητα", baixovalor:"− Φωτεινότητα" },
+    transDesc: {
+      HT: "Υψηλή διαφάνεια — η αποκατάσταση σχεδόν δεν φιλτράρει το υπόστρωμα. Τυπική χρήση: όψεις με ομοιόμορφο πάχος σε όλες τις παρασκευές.",
+      MT: "Μέτρια διαφάνεια — διατηρεί την οικογένεια χρώματος, αλλά η φωτεινότητα πέφτει. Τυπική χρήση: παρασκευές με μικρές διαφορές πάχους.",
+      LT: "Χαμηλή διαφάνεια — το ένθεμα επιβάλλει το δικό του χρώμα· το υπόστρωμα διαπερνά ελάχιστα. Τυπική χρήση: περιπτώσεις που απαιτούν περισσότερη φωτεινότητα και επιφανειακή στρωματοποίηση.",
+      MO: "Μέτρια αδιαφάνεια — ισχυρή συγκάλυψη, αλλά η φωτεινότητα διαφεύγει ακόμη και σε πάχος 3mm. Τυπική χρήση: στεφάνες.",
+      HO: "Υψηλή αδιαφάνεια — σχεδόν πλήρες οπτικό φράγμα. Τυπική χρήση: διπλή τσιμέντωση (υποδομή πάνω από έντονα αποχρωματισμένο υπόστρωμα πριν το τελικό υλικό επίστρωσης)."
+    },
+    resultNote: (t,i,s) => `Προβλεπόμενο τελικό χρώμα για ένθεμα ${t} ${i} πάνω σε υπόστρωμα ${s}.`,
+    explainIntro: (pct,pctChroma,t,th,sub) => `Σε αυτή τη διαμόρφωση, το υπόστρωμα <strong>${sub}</strong> διεισδύει οπτικά περίπου <strong>${pct}%</strong> στη φωτεινότητα και ασκεί <strong>${pctChroma}%</strong> πίεση χρώματος (κόρου) — με διαφάνεια ${t} και πάχος ${th}mm. Πιο κορεσμένα υποστρώματα πιέζουν περισσότερο, και αυτή η πίεση συγκρατείται μόνο από το πάχος και την αδιαφάνεια. `,
+    bleachWarn: `<br><br><strong>Προσοχή — έξοδος από την κλίμακα bleach:</strong> η πίεση κόρου του υποστρώματος ήταν αρκετή για να "μολύνει" το ένθεμα bleach. Το αποτέλεσμα ολισθαίνει προς τη συμβατική κλίμακα — ο ασθενής δεν θα αντιληφθεί την αποκατάσταση ως bleach. Για να διατηρηθεί η κλίμακα BL, χρειάζεται περισσότερη αδιαφάνεια, πάχος, ή έλεγχος του υποστρώματος πριν την τελική αποκατάσταση. `,
+    thinWarn: `Το λεπτό πάχος <strong>ενισχύει</strong> την επιρροή του υποστρώματος — κάτω από 0,5mm καμία διαφάνεια δεν δίνει προβλέψιμο αποτέλεσμα. `,
+    plateauWarn: `Πάνω από ~1mm η συγκάλυψη φτάνει σε <strong>οροπέδιο</strong>: η προσθήκη πάχους σχεδόν δεν αλλάζει το χρώμα — ό,τι διαφεύγει ακόμη (όπως η φωτεινότητα) διαφεύγει ακόμη και στα 3mm. Από εδώ και πέρα αποφασίζει η διαφάνεια του ενθέματος, όχι το πάχος. `,
+    famShiftWarn: `<br><br><strong>Προσοχή — μετατόπιση οικογένειας:</strong> η υψηλή διαφάνεια δεν μπορεί να "συγκρατήσει" την απόχρωση του ενθέματος. Αντί το υπόστρωμα να διαφαίνεται απλώς, η HT αραιώνει τον κόρο και ταυτόχρονα ρίχνει τη φωτεινότητα, σπρώχνοντας την ανάγνωση προς τον γκριζωπό άξονα (οικογένεια C). Είναι η κλασική περίπτωση HT A1 πάνω σε A3 → C1.`,
+    lowValueWarn: `<br><br>Η οικογένεια χρώματος διατηρείται, αλλά η <strong>φωτεινότητα πέφτει</strong> — το αποτέλεσμα φαίνεται πιο σκούρο/γκριζωπό από το σημείο αναφοράς της κλίμακας. `,
+    lowValueFix: `Ένα τσιμέντο <strong>+φωτεινότητας</strong> μπορεί να ανακτήσει μέρος αυτής της λαμπρότητας.`,
+    cemLeverage: (label,pct) => `<br><br>Το τσιμέντο <strong>${label}</strong> λειτουργεί με <strong>μόχλευση ${pct}%</strong> σε αυτή τη διαμόρφωση. `,
+    cemHigh: `Σε μια τόσο λεπτή και διαφανή αποκατάσταση, το τσιμέντο είναι πραγματικό εργαλείο διόρθωσης — αλλάζει φωτεινότητα <em>και</em> κορεσμό. Εδώ η επιλογή τσιμέντου κρίνει την περίπτωση.`,
+    cemMed: `Μέτρια επιρροή: το τσιμέντο ρυθμίζει, αλλά δεν διορθώνει — το ένθεμα εξακολουθεί να κυριαρχεί στο αποτέλεσμα.`,
+    cemLow: `Σε αυτό το πάχος/αδιαφάνεια, το τσιμέντο είναι σχεδόν αδιάφορο για το τελικό χρώμα — η διόρθωση πρέπει να προέρχεται από το ένθεμα, όχι από την τσιμέντωση.`,
+    cemNeutral: (pct) => `<br><br>Ουδέτερο τσιμέντο: η τελική ανάγνωση καθορίζεται από ένθεμα + υπόστρωμα. Με <strong>${pct}% διαθέσιμη μόχλευση</strong> σε αυτή τη διαμόρφωση, ${pct >= 55 ? 'ένα τσιμέντο +φωτεινότητας ή −φωτεινότητας θα είχε πραγματικό αποτέλεσμα εδώ — αξίζει προσομοίωση.' : 'η αλλαγή τσιμέντου θα άλλαζε ελάχιστα το αποτέλεσμα.'}`,
+    challenges: [
+      { desc:"Ο ασθενής θέλει πιο ανοιχτό χρώμα: υπόστρωμα A3, όψη 0,5mm. Ο στόχος είναι να επιτευχθεί", target:"A1", fixed:{ substrate:"A3", thickness:0.5 } },
+      { desc:"Μονή στεφάνη σε παρασκευή A3.5, πάχος 1,5mm. Επίτευξη", target:"A2", fixed:{ substrate:"A3.5", thickness:1.5 } },
+      { desc:"Αποχρωματισμένη παρασκευή C3, στεφάνη 2mm. Ο οδοντίατρος ζήτησε", target:"A2", fixed:{ substrate:"C3", thickness:2.0 } },
+      { desc:"Πρόσθια αισθητική περίπτωση, ομοιόμορφο υπόστρωμα A2, όψεις 0,7mm. Στόχος χρώματος", target:"B1", fixed:{ substrate:"A2", thickness:0.7 } },
+      { desc:"Υπόστρωμα A4, στεφάνη 1,8mm. Ο ασθενής θέλει", target:"A1", fixed:{ substrate:"A4", thickness:1.8 } },
+      { desc:"Ασθενής μετά από λεύκανση θέλει να διατηρήσει το αποτέλεσμα: υπόστρωμα A2, όψεις 0,6mm. Στόχος", target:"BL3", fixed:{ substrate:"A2", thickness:0.6 } },
+      { desc:"Περίπτωση υψηλών αισθητικών απαιτήσεων: υπόστρωμα A3, στεφάνες 1,5mm. Ο ασθενής ζήτησε ρητά", target:"BL4", fixed:{ substrate:"A3", thickness:1.5 } }
+    ],
+    verdictHit: (t,i,cem,shade) => `<strong>Σωστά.</strong> ${t} ${i} με τσιμέντο ${cem} δίνει σταθερό ${shade} σε αυτή τη διαμόρφωση.`,
+    verdictMissBase: (shade,low) => `Αυτός ο συνδυασμός δίνει <strong>${shade}${low ? ' με χαμηλή φωτεινότητα' : ''}</strong>, όχι `,
+    verdictMissFam: ` Η υψηλή διαφάνεια άφησε το υπόστρωμα να παρασύρει την οικογένεια χρώματος.`,
+    verdictMissLow: ` Η φωτεινότητα έπεσε — σκεφτείτε πιο αδιαφανές ένθεμα, περισσότερο πάχος, ή τσιμέντο +φωτεινότητας.`,
+    verdictTryAgain: ' Προσαρμόστε και δοκιμάστε ξανά.'
+  }
+};
+
+let currentLang = 'en';
+function t(){ return I18N[currentLang]; }
+function decimalSep(){
+  return ['pt','es','fr','de','it','ru','el'].includes(currentLang) ? ',' : '.';
+}
+
+/* =========================================================
+   MOTOR DE COR — baseado nas regras clínicas de Pablio Caetano
+   Modelo: cor = {family (A/B/C/D), step (1-4), valueShift}
+   Regras centrais:
+   1. VALOR "vaza" em quase toda translucidez (até MO em 3mm)
+   2. MATIZ (família) só muda com HT quando distância substrato-pastilha é grande
+   3. Cimento ajusta VALOR (neutro / +valor / -valor), não família
+   4. Espessura atenua a influência de forma NÃO-LINEAR (~28% de redução por +0,5mm)
+   ========================================================= */
+
+const VITA = ["BL1","BL2","BL3","BL4","A1","A2","A3","A3.5","A4","B1","B2","B3","B4","C1","C2","C3","C4","D2","D3","D4"];
+
+// Aproximação visual das cores Vita + Bleach (para exibição)
+const VITA_HEX = {
+  "BL1":"#faf7f0","BL2":"#f8f3e8","BL3":"#f6f0e2","BL4":"#f4edda",
+  "A1":"#f2e8d5","A2":"#eddcbd","A3":"#e5cda3","A3.5":"#d9bb88","A4":"#c9a670",
+  "B1":"#f4ecd9","B2":"#eee0bc","B3":"#e2cd97","B4":"#d3b878",
+  "C1":"#dcd5c3","C2":"#cec4ab","C3":"#bcb093","C4":"#a6997c",
+  "D2":"#ddd2bd","D3":"#cfc2a6","D4":"#bfb08f"
+};
+
+// Valor relativo (brilho) aproximado de cada cor — quanto maior, mais claro
+const VITA_VALUE = {
+  "BL1":12,"BL2":11.5,"BL3":11,"BL4":10.5,
+  "B1":10,"A1":9.5,"B2":8.5,"D2":8,"A2":8,"C1":7.5,"C2":7,"D3":6.5,"A3":6.5,"D4":6,"B3":6,"A3.5":5,"B4":5,"C3":4.5,"A4":4,"C4":3
+};
+
+// Croma relativo — quanto maior, mais saturado
+const VITA_CHROMA = {
+  "BL1":0.3,"BL2":0.6,"BL3":1,"BL4":1.4,
+  "A1":2,"A2":4,"A3":6,"A3.5":7.5,"A4":9,
+  "B1":1.5,"B2":3.5,"B3":6,"B4":8,
+  "C1":2,"C2":3.5,"C3":5,"C4":6.5,
+  "D2":2.5,"D3":4,"D4":5.5
+};
+
+function familyOf(shade){ return shade.replace(/[0-9.]/g,''); }
+function stepOf(shade){ return parseFloat(shade.replace(/[A-D]/,'')); }
+
+// Fator de "penetração" do substrato por translucidez (peça fina, ~0,3mm)
+// Calibrado com casos de bancada: preparo A1 + pastilha BL1 →
+//   fino:  LT→BL2, MT→BL3, HT→BL4
+//   ≥1mm:  LT→BL1, MT→BL1~BL2, HT→BL2
+const TRANS_FACTOR = { HT: 0.60, MT: 0.40, LT: 0.20, MO: 0.12, HO: 0.05 };
+
+const CEMENTS = [
+  { id:"neutro", valShift: 0, chrShift: 0 },
+  { id:"maisvalor", valShift: +1.6, chrShift: -0.9 },
+  { id:"baixovalor", valShift: -1.6, chrShift: +0.9 }
+];
+function cemLabel(id){ return t().cementLabels[id]; }
+
+const state = {
+  substrate: "A3",
+  thickness: 0.8,
+  translucency: "LT",
+  ingotShade: "A1",
+  cement: "neutro",
+  mode: "sim",
+  challenge: null,
+  hits: 0, tries: 0
+};
+
+/* ---------- Motor de previsão ---------- */
+function predict(){
+  const sub = state.substrate;
+  const ing = state.ingotShade;
+  const t = state.translucency;
+  const th = state.thickness;
+
+  // Fator de penetração base pela translucidez
+  let f = TRANS_FACTOR[t];
+
+  // Atenuação por espessura: decaimento rápido entre 0,3 e 1,0mm,
+  // depois PLATÔ — acima de ~1mm, mais espessura quase não muda o resultado
+  // (calibrado: LT estabiliza em BL1 a partir de 1mm; HT estabiliza em BL2)
+  const atten = th <= 0.3 ? 1 : Math.max(0.30, Math.pow(0.6, (th - 0.3) / 0.35));
+  f = f * atten;
+
+  const subVal = VITA_VALUE[sub], ingVal = VITA_VALUE[ing];
+  const subChr = VITA_CHROMA[sub], ingChr = VITA_CHROMA[ing];
+  const subFam = familyOf(sub), ingFam = familyOf(ing);
+
+  // PRESSÃO DE CROMA: substrato saturado "empurra" mais através da peça.
+  // A pressão cresce com o croma do substrato e é contida por espessura+opacidade.
+  // Um A4 sob 0,5mm de HT penetra muito mais que sob 1,5mm de LT.
+  const chromaPressure = Math.min(1, f * (1 + subChr / 8));
+
+  // 1. VALOR sempre recalcula (vaza em toda translucidez)
+  // O valor final é uma mistura ponderada, com o substrato pesando pelo fator f
+  // — mas com um "vazamento mínimo" de valor mesmo em opacos (regra do MO 3mm).
+  // Substratos mais saturados também derrubam mais valor (absorvem mais luz).
+  const valorLeak = Math.max(f * (1 + subChr / 14), 0.10);
+  let finalVal = ingVal * (1 - Math.min(valorLeak, 1)) + subVal * Math.min(valorLeak, 1);
+
+  // 2. CROMA desliza pela pressão de croma (não pelo fator bruto)
+  let finalChr = ingChr * (1 - chromaPressure) + subChr * chromaPressure;
+
+  // 3. FAMÍLIA: só muda com HT + distância grande.
+  // A distância agora pesa o croma do substrato com mais força — um substrato
+  // muito saturado sob HT arrasta a família mesmo com diferença menor de valor.
+  let finalFam = ingFam;
+  let famShifted = false;
+  const shadeDistance = Math.abs(subVal - ingVal) + Math.abs(subChr - ingChr) * 0.7;
+  if(t === "HT" && f > 0.25 && shadeDistance > 3){
+    // HT dilui o croma da pastilha sem substituí-lo — resultado acinzenta → família C
+    finalFam = "C";
+    famShifted = true;
+    finalChr = finalChr * 0.6; // dessaturação característica
+  }
+
+  // 4. CIMENTO — alavancagem variável.
+  // O cimento só influencia na medida em que a peça "deixa ver" através dela:
+  // peça fina + translúcida → cimento é ferramenta poderosa (lentes);
+  // peça espessa + opaca → cimento é quase irrelevante (coroas MO/HO).
+  // Alavancagem = abertura óptica da pastilha × proximidade do cimento à superfície.
+  const cem = CEMENTS.find(c => c.id === state.cement);
+  const thicknessLeverage = Math.min(1, 0.45 / th);          // 0,45mm→100%, 0,9mm→50%, 1,8mm→25%
+  const opticalOpenness = 0.25 + TRANS_FACTOR[t] * 0.75;     // HT abre quase tudo, HO quase nada
+  const cementLeverage = thicknessLeverage * opticalOpenness;
+  finalVal += cem.valShift * cementLeverage;
+  finalChr = Math.max(0, finalChr + cem.chrShift * cementLeverage);
+
+  // Pastilha BLEACH sob pressão de croma: se o substrato empurrar croma demais,
+  // o resultado "sai" da escala bleach e cai na escala convencional (B ou A)
+  let bleachDropped = false;
+  if(finalFam === "BL" && finalChr > 1.8){
+    finalFam = finalChr > 3.5 ? "A" : "B";
+    bleachDropped = true;
+  }
+
+  // Mapear (família, valor, croma) de volta para a cor Vita mais próxima
+  let best = null, bestDist = Infinity;
+  VITA.forEach(shade => {
+    if(familyOf(shade) !== finalFam) return;
+    const d = Math.abs(VITA_VALUE[shade] - finalVal) * 1.2 + Math.abs(VITA_CHROMA[shade] - finalChr);
+    if(d < bestDist){ bestDist = d; best = shade; }
+  });
+
+  // Detectar "baixo valor" — quando o valor final ficou visivelmente abaixo da cor mapeada
+  const lowValue = (finalVal < VITA_VALUE[best] - 0.7);
+
+  return { shade: best, lowValue, famShifted, bleachDropped, factor: f, chromaPressure, cementLeverage, finalVal, finalChr };
+}
+
+/* ---------- Texto explicativo ---------- */
+function explain(r){
+  const lang = t();
+  const trans = state.translucency;
+  let txt = `<strong>${lang.transDesc[trans]}</strong><br><br>`;
+
+  const pct = Math.round(r.factor * 100);
+  const pctChroma = Math.round(r.chromaPressure * 100);
+  const thStr = state.thickness.toFixed(1).replace('.', decimalSep());
+  txt += lang.explainIntro(pct, pctChroma, trans, thStr, state.substrate);
+
+  if(r.bleachDropped){ txt += lang.bleachWarn; }
+
+  if(state.thickness < 0.6){
+    txt += lang.thinWarn;
+  } else if(state.thickness >= 1.0){
+    txt += lang.plateauWarn;
+  }
+
+  if(r.famShifted){
+    txt += lang.famShiftWarn;
+  } else if(r.lowValue){
+    txt += lang.lowValueWarn;
+    if(state.cement !== "maisvalor"){ txt += lang.lowValueFix; }
+  }
+
+  const cem = CEMENTS.find(c=>c.id===state.cement);
+  const cemPct = Math.round(r.cementLeverage * 100);
+  if(cem.valShift !== 0){
+    txt += lang.cemLeverage(cemLabel(cem.id), cemPct);
+    if(cemPct >= 55){ txt += lang.cemHigh; }
+    else if(cemPct >= 25){ txt += lang.cemMed; }
+    else { txt += lang.cemLow; }
+  } else {
+    txt += lang.cemNeutral(cemPct);
+  }
+
+  return txt;
+}
+
+/* ---------- Render ---------- */
+function renderChips(containerId, items, selected, onSelect, labelFn){
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  items.forEach(item => {
+    const id = typeof item === 'string' ? item : item.id;
+    const label = labelFn ? labelFn(item) : (typeof item === 'string' ? item : item.label);
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (id === selected ? ' selected' : '');
+    chip.textContent = label;
+    chip.addEventListener('click', () => { onSelect(id); update(); });
+    el.appendChild(chip);
+  });
+}
+
+/* ---------- Desenhos SVG ---------- */
+function svgPreparo(color, shellColor, shellOpacity, thicknessPx){
+  // Coto preparado (incisivo reduzido) com a "casca" da peça futura ao redor
+  const shell = thicknessPx > 0 ? `
+    <path d="M33 78 L35 34 Q36 22 50 22 Q64 22 65 34 L67 78"
+      fill="none" stroke="${shellColor}" stroke-opacity="${shellOpacity}"
+      stroke-width="${thicknessPx}" stroke-linecap="round"/>` : '';
+  return `
+  <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <!-- raiz -->
+    <path d="M40 82 Q37 108 50 113 Q63 108 60 82 Z" fill="#d8cdbb" opacity="0.35"/>
+    <!-- linha gengival -->
+    <path d="M26 82 Q50 74 74 82" stroke="#c96a5c" stroke-width="2.5" fill="none" opacity="0.55"/>
+    ${shell}
+    <!-- coto -->
+    <path d="M36 80 L38 36 Q39 26 50 26 Q61 26 62 36 L64 80 Z" fill="${color}"/>
+    <path d="M42 34 Q43 29 50 29" stroke="rgba(255,255,255,0.45)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function svgCimento(color){
+  // Seringa de cimento com gota
+  return `
+  <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <!-- corpo da seringa -->
+    <rect x="36" y="18" width="28" height="52" rx="4" fill="#31443f" stroke="#4a5f59" stroke-width="1.5"/>
+    <rect x="40" y="24" width="20" height="40" rx="2" fill="${color}"/>
+    <!-- êmbolo -->
+    <rect x="44" y="8" width="12" height="12" rx="2" fill="#4a5f59"/>
+    <!-- bico -->
+    <path d="M46 70 L54 70 L51 86 L49 86 Z" fill="#4a5f59"/>
+    <!-- gota -->
+    <path d="M50 92 Q42 102 50 108 Q58 102 50 92 Z" fill="${color}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  </svg>`;
+}
+
+function svgPastilha(color, translucencyOpacity, label){
+  // Pastilha e.max (lingote cilíndrico) — opacidade reflete a translucidez
+  return `
+  <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+    <!-- sombra -->
+    <ellipse cx="50" cy="96" rx="30" ry="6" fill="rgba(0,0,0,0.3)"/>
+    <!-- corpo do lingote -->
+    <rect x="24" y="42" width="52" height="50" rx="6" fill="${color}" fill-opacity="${translucencyOpacity}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+    <!-- topo -->
+    <ellipse cx="50" cy="42" rx="26" ry="9" fill="${color}" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+    <!-- brilho -->
+    <path d="M32 52 Q31 78 34 86" stroke="rgba(255,255,255,0.4)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <text x="50" y="70" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="rgba(0,0,0,0.5)" font-weight="500">${label}</text>
+  </svg>`;
+}
+
+function svgDenteFinal(color, lowValue){
+  const bright = lowValue ? 'brightness(0.88) saturate(0.92)' : 'none';
+  return `
+  <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" style="filter:${bright}">
+    <!-- linha gengival -->
+    <path d="M24 40 Q50 30 76 40" stroke="#c96a5c" stroke-width="2.5" fill="none" opacity="0.55"/>
+    <!-- coroa completa -->
+    <path d="M29 42 L31 30 Q33 18 50 18 Q67 18 69 30 L71 42 L72 74 Q72 100 50 104 Q28 100 28 74 Z" fill="${color}"/>
+    <!-- lóbulos sutis -->
+    <path d="M40 30 L40 92 M60 30 L60 92" stroke="rgba(0,0,0,0.06)" stroke-width="2" fill="none"/>
+    <!-- brilho incisal -->
+    <ellipse cx="42" cy="38" rx="9" ry="16" fill="rgba(255,255,255,0.4)" transform="rotate(-12 42 38)"/>
+    <!-- halo translúcido incisal -->
+    <path d="M30 86 Q50 100 70 86 L71 74 Q50 88 29 74 Z" fill="rgba(160,190,200,0.18)"/>
+  </svg>`;
+}
+
+function renderFlow(r){
+  const lang = t();
+  const el = document.getElementById('layersView');
+  const cemColor = { neutro:'#d8d3c8', maisvalor:'#f4f1ea', baixovalor:'#b0a892' }[state.cement];
+  const ingotOpacity = 0.45 + (1 - TRANS_FACTOR[state.translucency]) * 0.55;
+  const shellPx = 2 + state.thickness * 4; // espessura visível da peça no desenho
+  const thStr = state.thickness.toFixed(1).replace('.', decimalSep());
+
+  el.innerHTML = `
+    <div class="stage-card">
+      ${svgPreparo(VITA_HEX[state.substrate], VITA_HEX[state.ingotShade], ingotOpacity * 0.6, shellPx)}
+      <div class="stage-label">${lang.stagePreparo}<strong>${state.substrate} · ${lang.stagePeca} ${thStr}mm</strong></div>
+    </div>
+    <div class="flow-op">+</div>
+    <div class="stage-card">
+      ${svgCimento(cemColor)}
+      <div class="stage-label">${lang.stageCimento}<strong>${cemLabel(state.cement)}</strong></div>
+    </div>
+    <div class="flow-op">+</div>
+    <div class="stage-card">
+      ${svgPastilha(VITA_HEX[state.ingotShade], ingotOpacity, state.translucency)}
+      <div class="stage-label">${lang.stagePastilha}<strong>${state.translucency} ${state.ingotShade}</strong></div>
+    </div>
+    <div class="flow-op">=</div>
+    <div class="stage-card result-stage">
+      ${svgDenteFinal(VITA_HEX[r.shade], r.lowValue)}
+      <div class="stage-label">${lang.stageResultado}<strong>${r.shade}${r.lowValue ? ' ↓' : ''}</strong></div>
+    </div>
+  `;
+}
+
+function update(){
+  const r = predict();
+
+  renderChips('substrateChips', VITA, state.substrate, v => state.substrate = v);
+  renderChips('translucencyChips', ["HT","MT","LT","MO","HO"], state.translucency, v => state.translucency = v);
+  renderChips('ingotShadeChips', ["BL1","BL2","BL3","BL4","A1","A2","A3","B1","B2","C1","D2"], state.ingotShade, v => state.ingotShade = v);
+  renderChips('cementChips', CEMENTS, state.cement, v => state.cement = v, (item) => cemLabel(item.id));
+
+  document.getElementById('subVal').textContent = state.substrate;
+  const thStr = state.thickness.toFixed(1).replace('.', decimalSep());
+  document.getElementById('thickVal').textContent = thStr + ' mm';
+
+  const swatch = document.getElementById('resultSwatch');
+  swatch.style.background = VITA_HEX[r.shade];
+  swatch.style.filter = r.lowValue ? 'brightness(0.88) saturate(0.92)' : 'none';
+
+  document.getElementById('resultShade').textContent = r.shade + (r.lowValue ? ' ↓' : '');
+
+  document.getElementById('resultNote').textContent = t().resultNote(state.translucency, state.ingotShade, state.substrate);
+
+  const flag = document.getElementById('resultFlag');
+  if(r.famShifted){
+    flag.style.display = 'inline-block';
+    flag.className = 'flag warn';
+    flag.textContent = t().flagFamShift;
+  } else if(r.bleachDropped){
+    flag.style.display = 'inline-block';
+    flag.className = 'flag warn';
+    flag.textContent = t().flagBleach;
+  } else if(r.lowValue){
+    flag.style.display = 'inline-block';
+    flag.className = 'flag warn';
+    flag.textContent = t().flagLowValue;
+  } else {
+    flag.style.display = 'inline-block';
+    flag.className = 'flag good';
+    flag.textContent = t().flagStable;
+  }
+
+  document.getElementById('explainText').innerHTML = explain(r);
+  renderFlow(r);
+}
+
+document.getElementById('thickness').addEventListener('input', e => {
+  state.thickness = parseFloat(e.target.value);
+  update();
+});
+
+/* ---------- Modo Desafio ---------- */
+function newChallenge(){
+  const list = t().challenges;
+  const idx = Math.floor(Math.random() * list.length);
+  const ch = list[idx];
+  state.challenge = { ...ch, idx };
+  state.substrate = ch.fixed.substrate;
+  state.thickness = ch.fixed.thickness;
+  document.getElementById('thickness').value = ch.fixed.thickness;
+  document.getElementById('chTitle').textContent = t().challengeTitle;
+  document.getElementById('chDesc').textContent = ch.desc + ':';
+  document.getElementById('chSwatch').style.background = VITA_HEX[ch.target];
+  document.getElementById('chLabel').textContent = ch.target;
+  document.getElementById('verdict').className = 'verdict';
+  update();
+}
+
+document.getElementById('checkBtn').addEventListener('click', () => {
+  if(!state.challenge) return;
+  const lang = t();
+  const r = predict();
+  state.tries++;
+  const verdict = document.getElementById('verdict');
+  const hit = (r.shade === state.challenge.target && !r.lowValue && !r.famShifted);
+  if(hit){
+    state.hits++;
+    verdict.className = 'verdict show hit';
+    verdict.innerHTML = lang.verdictHit(state.translucency, state.ingotShade, cemLabel(state.cement).toLowerCase(), r.shade);
+  } else {
+    verdict.className = 'verdict show miss';
+    let why = lang.verdictMissBase(r.shade, r.lowValue) + `<strong>${state.challenge.target}</strong>.`;
+    if(r.famShifted) why += lang.verdictMissFam;
+    else if(r.lowValue) why += lang.verdictMissLow;
+    verdict.innerHTML = why + lang.verdictTryAgain;
+  }
+  document.getElementById('scoreHits').textContent = state.hits;
+  document.getElementById('scoreTries').textContent = state.tries;
+});
+
+document.getElementById('newChallengeBtn').addEventListener('click', newChallenge);
+
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.mode = tab.dataset.mode;
+    document.getElementById('challengeArea').style.display = state.mode === 'game' ? 'block' : 'none';
+    if(state.mode === 'game' && !state.challenge) newChallenge();
+  });
+});
+
+/* ---------- Troca de idioma ---------- */
+function applyStaticLanguage(){
+  const lang = t();
+  const langTag = { pt:'pt-BR', es:'es', fr:'fr', de:'de', it:'it', ru:'ru', zh:'zh-CN', ja:'ja', ko:'ko', ar:'ar', el:'el' }[currentLang] || 'en';
+  document.documentElement.lang = langTag;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.title = lang.title + ' | Atelier Pablio Caetano';
+  document.getElementById('txtEyebrow').textContent = lang.eyebrow;
+  document.getElementById('txtTitle').textContent = lang.title;
+  document.getElementById('txtSubhead').textContent = lang.subhead;
+  document.getElementById('tabSim').textContent = lang.tabSim;
+  document.getElementById('tabGame').textContent = lang.tabGame;
+  document.getElementById('lblSubstrate').textContent = lang.lblSubstrate;
+  document.getElementById('lblThickness').textContent = lang.lblThickness;
+  document.getElementById('lblTranslucency').textContent = lang.lblTranslucency;
+  document.getElementById('lblIngotShade').textContent = lang.lblIngotShade;
+  document.getElementById('lblCement').textContent = lang.lblCement;
+  document.getElementById('txtOpticalTitle').textContent = lang.opticalTitle;
+  document.getElementById('txtExTitle').textContent = lang.exTitle;
+  document.getElementById('txtDisclaimer').textContent = lang.disclaimer;
+  document.getElementById('txtFooter').textContent = lang.footer;
+  document.getElementById('checkBtn').textContent = lang.checkBtn;
+  document.getElementById('newChallengeBtn').textContent = lang.newBtn;
+  document.getElementById('lblHits').textContent = lang.hits;
+  document.getElementById('lblTries').textContent = lang.tries;
+  if(!state.challenge){
+    document.getElementById('chTitle').textContent = lang.challengeGenericTitle;
+  }
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentLang = btn.dataset.lang;
+    applyStaticLanguage();
+    if(state.mode === 'game'){ newChallenge(); }
+    update();
+  });
+});
+
+applyStaticLanguage();
+update();
+
+/* ---------- Tela de senha ---------- */
+const SITE_PASSWORD = "nllight2026"; // EDITE AQUI para trocar a senha
+function checkPassword(){
+  const input = document.getElementById('passwordInput');
+  const val = input.value.trim().toLowerCase();
+  if(val === SITE_PASSWORD.toLowerCase()){
+    document.getElementById('passwordGate').style.display = 'none';
+    document.getElementById('appContent').style.display = 'block';
+  } else {
+    document.getElementById('passwordError').classList.add('show');
+    input.value = '';
+    input.focus();
+  }
+}
+document.getElementById('passwordSubmit').addEventListener('click', checkPassword);
+document.getElementById('passwordInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') checkPassword();
+});
+document.getElementById('passwordInput').focus();
+</script>
+</body>
+</html>
